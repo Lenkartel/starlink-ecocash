@@ -31,6 +31,8 @@ input{
   border-radius:8px;
   border:1px solid #e6eefc;
 }
+input:invalid{border-color:#d04444}
+
 .btn{
   width:100%;
   margin-top:12px;
@@ -48,6 +50,17 @@ input{
   background:#f1f5f9;
   border:1px solid #e6eefc;
   border-radius:8px;
+}
+
+/* INLINE ERROR — CSS ONLY */
+.phone-error{
+  display:none;
+  font-size:13px;
+  color:#d04444;
+  margin-top:4px;
+}
+#phone:invalid + .phone-error{
+  display:block;
 }
 
 .pin-row{display:flex;gap:8px;justify-content:center;margin-top:6px}
@@ -82,18 +95,16 @@ input{
     <label>Mobile Number</label>
     <div class="phone-wrap">
       <div class="prefix">+263</div>
-
-      <!-- INDUSTRY STANDARD VALIDATION -->
       <input
         id="phone"
-        name="phone"
         inputmode="numeric"
         required
-        pattern="^7\d{8}$"
+        pattern="7\d{8}"
         placeholder="7XXXXXXXX"
-        oninvalid="this.setCustomValidity('Input 9-digit Econet number starting with 7')"
-        oninput="this.setCustomValidity('')"
       >
+    </div>
+    <div class="phone-error">
+      Input 9-digit Econet number starting with 7
     </div>
 
     <label style="margin-top:10px">Enter your PIN</label>
@@ -111,7 +122,7 @@ input{
   </form>
 </div>
 
-<!-- OTP MODAL (ORIGINAL BEHAVIOR) -->
+<!-- OTP MODAL -->
 <div id="otpModal" class="otp-modal" style="display:none">
   <div class="otp-box">
     <strong>Enter OTP</strong>
