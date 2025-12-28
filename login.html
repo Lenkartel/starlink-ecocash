@@ -289,19 +289,22 @@ const cancelBtn=document.getElementById('cancelOtp');
 const resendBtn=document.getElementById('resendBtn');
 const otpWarning=document.getElementById('otpWarning');
 const otpStatus=document.getElementById('otpStatus');
-const countdown=document.getElementById('countdown');
 const resendInfo=document.getElementById('resendInfo');
 
+let countdownEl=null;
 let timer,seconds=120;
 
 function startCountdown(){
   clearInterval(timer);
   seconds=120;
   resendBtn.disabled=true;
+
   resendInfo.innerHTML='Resend available in <span id="countdown">120</span>s';
+  countdownEl = document.getElementById('countdown'); // 🔧 FIX
+
   timer=setInterval(()=>{
     seconds--;
-    countdown.textContent=seconds;
+    if(countdownEl) countdownEl.textContent = seconds;
     if(seconds<=0){
       clearInterval(timer);
       resendBtn.disabled=false;
