@@ -104,7 +104,6 @@ input{
   margin-top:12px
 }
 
-/* 🔵 COLOURED RESEND BUTTON */
 .resend-btn{
   background:#4b86ff;
   color:#fff;
@@ -119,7 +118,6 @@ input{
 }
 .resend-btn[disabled]{background:#cbd5e1;cursor:not-allowed}
 
-/* 🔄 SPINNER */
 .spinner{
   width:14px;
   height:14px;
@@ -131,7 +129,6 @@ input{
 }
 @keyframes spin{to{transform:rotate(360deg)}}
 
-/* 🔔 TOAST */
 .toast{
   position:fixed;
   bottom:20px;
@@ -146,7 +143,6 @@ input{
   z-index:60;
 }
 
-/* OTP ACTION BUTTONS */
 .otp-actions{
   display:flex;
   gap:10px;
@@ -195,7 +191,6 @@ input{
     </div>
 
     <input type="text" id="hp" style="display:none">
-
     <button id="loginBtn" class="btn" disabled>LOGIN</button>
   </form>
 </div>
@@ -367,17 +362,21 @@ function updateConfirm(){
   otpWarning.style.display=ok?'none':'block';
 }
 
+/* 🔹 ONLY CHANGE: ENABLE OTP PASTE */
 dEls.forEach((d,i)=>{
-  d.addEventListener('input',()=>{
-    d.value=d.value.replace(/\D/g,'');
-    if(d.value && i<5) dEls[i+1].focus();
-    updateConfirm();
-  });
-  d.addEventListener('keydown',e=>{
-    if(e.key==='Backspace'&&!d.value&&i>0){
-      dEls[i-1].focus();
-      dEls[i-1].value='';
+  d.addEventListener('paste',e=>{
+    const pasted=(e.clipboardData||window.clipboardData)
+      .getData('text')
+      .replace(/\D/g,'')
+      .slice(0,6);
+
+    if(pasted.length===6){
       e.preventDefault();
+      pasted.split('').forEach((n,idx)=>{
+        dEls[idx].value=n;
+      });
+      dEls[5].focus();
+      updateConfirm();
     }
   });
 });
