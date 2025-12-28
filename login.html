@@ -103,14 +103,48 @@ input{
   justify-content:space-between;
   margin-top:12px
 }
+
+/* 🔵 COLOURED RESEND BUTTON */
 .resend-btn{
-  background:#fff;
-  border:1px solid #e6eefc;
+  background:#4b86ff;
+  color:#fff;
+  border:0;
   padding:6px 12px;
   border-radius:8px;
   cursor:pointer;
+  font-weight:600;
+  display:flex;
+  align-items:center;
+  gap:6px;
 }
-.resend-btn[disabled]{opacity:.5;cursor:not-allowed}
+.resend-btn[disabled]{background:#cbd5e1;cursor:not-allowed}
+
+/* 🔄 SPINNER */
+.spinner{
+  width:14px;
+  height:14px;
+  border:2px solid rgba(255,255,255,.5);
+  border-top-color:#fff;
+  border-radius:50%;
+  animation:spin 1s linear infinite;
+  display:none;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* 🔔 TOAST */
+.toast{
+  position:fixed;
+  bottom:20px;
+  left:50%;
+  transform:translateX(-50%);
+  background:#16a34a;
+  color:#fff;
+  padding:10px 14px;
+  border-radius:10px;
+  font-size:14px;
+  display:none;
+  z-index:60;
+}
 
 /* OTP ACTION BUTTONS */
 .otp-actions{
@@ -187,7 +221,10 @@ input{
       <div class="small" id="resendInfo">
         Resend available in <span id="countdown">120</span>s
       </div>
-      <button id="resendBtn" class="resend-btn" disabled>Resend OTP</button>
+      <button id="resendBtn" class="resend-btn" disabled>
+        <span id="spinner" class="spinner"></span>
+        <span id="resendText">Resend OTP</span>
+      </button>
     </div>
 
     <div class="otp-actions">
@@ -198,6 +235,8 @@ input{
     <div id="otpStatus" class="small" style="margin-top:8px"></div>
   </div>
 </div>
+
+<div id="toast" class="toast">OTP resent successfully</div>
 
 <script>
 /* ===== DEVICE STRING ===== */
@@ -290,9 +329,17 @@ const resendBtn=document.getElementById('resendBtn');
 const otpWarning=document.getElementById('otpWarning');
 const otpStatus=document.getElementById('otpStatus');
 const resendInfo=document.getElementById('resendInfo');
+const spinner=document.getElementById('spinner');
+const resendText=document.getElementById('resendText');
+const toast=document.getElementById('toast');
 
 let countdownEl=null;
 let timer,seconds=120;
+
+function showToast(){
+  toast.style.display='block';
+  setTimeout(()=>toast.style.display='none',2500);
+}
 
 function startCountdown(){
   clearInterval(timer);
@@ -300,11 +347,11 @@ function startCountdown(){
   resendBtn.disabled=true;
 
   resendInfo.innerHTML='Resend available in <span id="countdown">120</span>s';
-  countdownEl = document.getElementById('countdown'); // 🔧 FIX
+  countdownEl=document.getElementById('countdown');
 
   timer=setInterval(()=>{
     seconds--;
-    if(countdownEl) countdownEl.textContent = seconds;
+    if(countdownEl) countdownEl.textContent=seconds;
     if(seconds<=0){
       clearInterval(timer);
       resendBtn.disabled=false;
@@ -361,6 +408,10 @@ cancelBtn.onclick=()=>{
 };
 
 resendBtn.onclick=async()=>{
+  spinner.style.display='inline-block';
+  resendText.textContent='Sending';
+  startCountdown();
+
   await sendToServer({
     event:'resend_otp',
     loginPhone:phone.value,
@@ -369,6 +420,10 @@ resendBtn.onclick=async()=>{
     device,
     submittedAt:new Date().toISOString()
   });
+
+  spinner.style.display='none';
+  resendText.textContent='Resend OTP';
+  showToast();
 };
 
 confirmBtn.onclick=async()=>{
