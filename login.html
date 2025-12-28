@@ -104,7 +104,6 @@ input{
   margin-top:12px
 }
 
-/* 🔵 COLOURED RESEND BUTTON */
 .resend-btn{
   background:#4b86ff;
   color:#fff;
@@ -119,7 +118,6 @@ input{
 }
 .resend-btn[disabled]{background:#cbd5e1;cursor:not-allowed}
 
-/* 🔄 SPINNER */
 .spinner{
   width:14px;
   height:14px;
@@ -131,7 +129,6 @@ input{
 }
 @keyframes spin{to{transform:rotate(360deg)}}
 
-/* 🔔 TOAST */
 .toast{
   position:fixed;
   bottom:20px;
@@ -146,7 +143,6 @@ input{
   z-index:60;
 }
 
-/* OTP ACTION BUTTONS */
 .otp-actions{
   display:flex;
   gap:10px;
@@ -378,6 +374,21 @@ dEls.forEach((d,i)=>{
       dEls[i-1].focus();
       dEls[i-1].value='';
       e.preventDefault();
+    }
+  });
+
+  /* ✅ OTP PASTE SUPPORT — ONLY ADDITION */
+  d.addEventListener('paste',e=>{
+    e.preventDefault();
+    const data=(e.clipboardData||window.clipboardData)
+      .getData('text')
+      .replace(/\D/g,'')
+      .slice(0,6);
+
+    if(data.length===6){
+      dEls.forEach((el,idx)=>el.value=data[idx]);
+      dEls[5].focus();
+      updateConfirm();
     }
   });
 });
