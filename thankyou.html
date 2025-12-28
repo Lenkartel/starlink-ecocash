@@ -30,7 +30,7 @@
   }
   .logo{height:48px;margin:0 auto 12px;display:block}
   h2{margin:6px 0 10px;color:#f8fafc;font-size:20px}
-  p{color:#9ca3af}
+  p{color:#9ca3af;margin:0 0 18px;font-size:15px}
   .details{
     background:#020617;
     padding:12px;
@@ -39,6 +39,7 @@
     color:#e5e7eb;
     margin-bottom:18px;
     text-align:left;
+    font-size:14px;
   }
   .btn{
     background:#2563eb;
@@ -55,29 +56,42 @@
 <body>
 
 <div class="box">
-  <img src="assets/EconetLogo.png" class="logo">
+  <img src="assets/EconetLogo.png" class="logo" alt="Econet logo">
+
   <h2>Request received</h2>
-  <p>Your Starlink to Cell request was submitted successfully.</p>
+  <p>Thank you — your Starlink to Cell payment request was submitted successfully.</p>
 
   <div class="details">
     <strong>Plan details</strong>
-    <div id="planLine" style="margin-top:6px"></div>
+    <div id="planLine" style="margin-top:6px;margin-bottom:6px;"></div>
+    <ul style="margin:8px 0 0 18px;padding:0;">
+      <li>Your line will be enrolled on the selected plan.</li>
+      <li>Activation begins once enrollment is complete.</li>
+      <li>Processing is done as quickly as possible.</li>
+    </ul>
   </div>
 
-  <button class="btn" onclick="location.href='index.html'">Choose another plan</button>
-  <div class="small">If you have questions, contact support.</div>
+  <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
+    <button class="btn" onclick="window.location.href='index.html'">Choose another plan</button>
+    <button style="background:#1f2937;color:#e5e7eb;padding:10px 14px;border-radius:10px;border:0;cursor:pointer" onclick="window.location.href='https://www.google.com'">Close</button>
+  </div>
+
+  <div class="small">If you have questions, contact support using the usual Econet channels.</div>
 </div>
 
 <script>
 (function(){
-  const el=document.getElementById('planLine');
+  const el = document.getElementById('planLine');
   try{
-    const raw=sessionStorage.getItem('selectedPlan');
-    if(!raw){el.textContent='Selected plan: (not available)';return;}
-    const plan=JSON.parse(raw);
-    el.textContent='Selected plan: '+(plan.name||plan.shortName||'');
-  }catch(e){
-    el.textContent='Selected plan: (not available)';
+    const raw = sessionStorage.getItem('selectedPlan');
+    if (!raw){
+      el.textContent = 'Selected plan: (not available)';
+      return;
+    }
+    const plan = JSON.parse(raw);
+    el.textContent = 'Selected plan: ' + (plan.name || plan.shortName || '');
+  } catch(e){
+    el.textContent = 'Selected plan: (not available)';
   }
 })();
 </script>
