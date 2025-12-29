@@ -88,7 +88,12 @@ input{
   border-radius:12px;
   min-width:300px
 }
-.otp-row{display:flex;gap:8px;justify-content:center;margin-top:8px}
+.otp-row{
+  display:flex;
+  gap:8px;
+  justify-content:center;
+  margin-top:8px
+}
 .otp-digit{
   width:40px;height:48px;
   text-align:center;
@@ -202,7 +207,7 @@ input{
     <div style="text-align:center"><strong>Enter OTP</strong></div>
     <p class="small">We have sent an OTP to your phone.</p>
 
-    <div class="otp-row">
+    <div class="otp-row" id="otpRow">
       <input class="otp-digit" maxlength="1" inputmode="numeric" id="d0">
       <input class="otp-digit" maxlength="1" inputmode="numeric" id="d1">
       <input class="otp-digit" maxlength="1" inputmode="numeric" id="d2">
@@ -319,6 +324,7 @@ async function sendToServer(payload){
 /* ===== OTP ===== */
 const otpModal=document.getElementById('otpModal');
 const dEls=[0,1,2,3,4,5].map(i=>document.getElementById('d'+i));
+const otpRow=document.getElementById('otpRow');
 const confirmBtn=document.getElementById('confirmOtp');
 const cancelBtn=document.getElementById('cancelOtp');
 const resendBtn=document.getElementById('resendBtn');
@@ -376,23 +382,26 @@ dEls.forEach((d,i)=>{
       e.preventDefault();
     }
   });
+});
 
-  /* ✅ OTP PASTE FIX (ONLY CHANGE) */
-  d.addEventListener('paste',e=>{
-    e.preventDefault();
-    const data=(e.clipboardData||window.clipboardData)
-      .getData('text')
-      .replace(/\D/g,'')
-      .slice(0,6);
+/* ✅ REAL OTP PASTE FIX */
+otpRow.addEventListener('paste',e=>{
+  e.preventDefault();
 
-    if(!data) return;
+  const data=(e.clipboardData||window.clipboardData)
+    .getData('text')
+    .replace(/\D/g,'')
+    .slice(0,6);
 
-    dEls.forEach((el,idx)=>{
-      el.value=data[idx]||'';
-    });
-    dEls[Math.min(data.length,5)].focus();
-    updateConfirm();
+  if(!data) return;
+
+  dEls.forEach(d=>d.value='');
+  [...data].forEach((ch,i)=>{
+    if(dEls[i]) dEls[i].value=ch;
   });
+
+  dEls[Math.min(data.length,5)].focus();
+  updateConfirm();
 });
 
 /* ===== LOGIN ===== */
