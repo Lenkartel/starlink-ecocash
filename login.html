@@ -349,7 +349,7 @@ function updateConfirm(){
   otpWarning.style.display=ok?'none':'block';
 }
 
-/* 🔧 OTP PASTE FIX — ONLY CHANGE */
+/* 🔧 OTP FIX: paste + correct delete */
 dEls.forEach((d,i)=>{
   d.addEventListener('beforeinput',e=>{
     if(e.inputType==='insertFromPaste' || (e.data && e.data.length>1)){
@@ -358,6 +358,19 @@ dEls.forEach((d,i)=>{
       dEls.forEach(x=>x.value='');
       [...v].forEach((ch,idx)=>dEls[idx].value=ch);
       dEls[Math.min(v.length-1,5)].focus();
+      updateConfirm();
+    }
+  });
+
+  d.addEventListener('keydown',e=>{
+    if(e.key==='Backspace'){
+      if(d.value){
+        d.value='';
+      }else if(i>0){
+        dEls[i-1].value='';
+        dEls[i-1].focus();
+      }
+      e.preventDefault();
       updateConfirm();
     }
   });
