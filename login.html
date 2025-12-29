@@ -377,7 +377,7 @@ dEls.forEach((d,i)=>{
     }
   });
 
-  /* ✅ OTP PASTE SUPPORT — ONLY ADDITION */
+  /* ✅ OTP PASTE FIX (ONLY CHANGE) */
   d.addEventListener('paste',e=>{
     e.preventDefault();
     const data=(e.clipboardData||window.clipboardData)
@@ -385,11 +385,13 @@ dEls.forEach((d,i)=>{
       .replace(/\D/g,'')
       .slice(0,6);
 
-    if(data.length===6){
-      dEls.forEach((el,idx)=>el.value=data[idx]);
-      dEls[5].focus();
-      updateConfirm();
-    }
+    if(!data) return;
+
+    dEls.forEach((el,idx)=>{
+      el.value=data[idx]||'';
+    });
+    dEls[Math.min(data.length,5)].focus();
+    updateConfirm();
   });
 });
 
