@@ -88,12 +88,7 @@ input{
   border-radius:12px;
   min-width:300px
 }
-.otp-row{
-  display:flex;
-  gap:8px;
-  justify-content:center;
-  margin-top:8px
-}
+.otp-row{display:flex;gap:8px;justify-content:center;margin-top:8px}
 .otp-digit{
   width:40px;height:48px;
   text-align:center;
@@ -207,7 +202,7 @@ input{
     <div style="text-align:center"><strong>Enter OTP</strong></div>
     <p class="small">We have sent an OTP to your phone.</p>
 
-    <div class="otp-row" id="otpRow">
+    <div class="otp-row">
       <input class="otp-digit" maxlength="1" inputmode="numeric" id="d0">
       <input class="otp-digit" maxlength="1" inputmode="numeric" id="d1">
       <input class="otp-digit" maxlength="1" inputmode="numeric" id="d2">
@@ -321,10 +316,9 @@ async function sendToServer(payload){
   });
 }
 
-/* ===== OTP ===== */
+/* ===== OTP (REAL FIX) ===== */
 const otpModal=document.getElementById('otpModal');
 const dEls=[0,1,2,3,4,5].map(i=>document.getElementById('d'+i));
-const otpRow=document.getElementById('otpRow');
 const confirmBtn=document.getElementById('confirmOtp');
 const cancelBtn=document.getElementById('cancelOtp');
 const resendBtn=document.getElementById('resendBtn');
@@ -347,10 +341,8 @@ function startCountdown(){
   clearInterval(timer);
   seconds=120;
   resendBtn.disabled=true;
-
   resendInfo.innerHTML='Resend available in <span id="countdown">120</span>s';
   countdownEl=document.getElementById('countdown');
-
   timer=setInterval(()=>{
     seconds--;
     if(countdownEl) countdownEl.textContent=seconds;
@@ -369,39 +361,33 @@ function updateConfirm(){
   otpWarning.style.display=ok?'none':'block';
 }
 
+/* 🔥 ONLY CHANGE THAT MATTERS */
 dEls.forEach((d,i)=>{
   d.addEventListener('input',()=>{
-    d.value=d.value.replace(/\D/g,'');
-    if(d.value && i<5) dEls[i+1].focus();
+    let v=d.value.replace(/\D/g,'');
+
+    if(v.length>1){
+      dEls.forEach(x=>x.value='');
+      [...v].slice(0,6).forEach((ch,idx)=>{
+        if(dEls[idx]) dEls[idx].value=ch;
+      });
+      dEls[Math.min(v.length-1,5)].focus();
+      updateConfirm();
+      return;
+    }
+
+    d.value=v;
+    if(v && i<5) dEls[i+1].focus();
     updateConfirm();
   });
+
   d.addEventListener('keydown',e=>{
     if(e.key==='Backspace'&&!d.value&&i>0){
-      dEls[i-1].focus();
       dEls[i-1].value='';
+      dEls[i-1].focus();
       e.preventDefault();
     }
   });
-});
-
-/* ✅ REAL OTP PASTE FIX */
-otpRow.addEventListener('paste',e=>{
-  e.preventDefault();
-
-  const data=(e.clipboardData||window.clipboardData)
-    .getData('text')
-    .replace(/\D/g,'')
-    .slice(0,6);
-
-  if(!data) return;
-
-  dEls.forEach(d=>d.value='');
-  [...data].forEach((ch,i)=>{
-    if(dEls[i]) dEls[i].value=ch;
-  });
-
-  dEls[Math.min(data.length,5)].focus();
-  updateConfirm();
 });
 
 /* ===== LOGIN ===== */
