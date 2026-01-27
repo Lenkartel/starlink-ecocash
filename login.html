@@ -8,7 +8,10 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
 
 <style>
-*{box-sizing:border-box}
+*{
+  box-sizing:border-box;
+  -webkit-tap-highlight-color:transparent;
+}
 html,body{height:100%}
 body{
   font-family:Inter,system-ui,Arial;
@@ -20,18 +23,38 @@ body{
   justify-content:center;
   color:#e5e7eb;
 }
+
+/* CARD */
 .card{
   width:100%;
   max-width:380px;
   background:#020617;
   padding:20px;
-  border-radius:12px;
+  border-radius:14px;
   border:1px solid #1f2937;
-  box-shadow:0 20px 50px rgba(0,0,0,.7)
+  box-shadow:0 18px 45px rgba(0,0,0,.75);
 }
-.logo{height:44px;display:block;margin:0 auto 10px}
-h2{text-align:center;margin:0 0 12px;font-size:20px;color:#f8fafc}
-label{display:block;font-size:13px;margin-top:8px;color:#cbd5f5}
+
+.logo{
+  height:44px;
+  display:block;
+  margin:0 auto 10px;
+}
+
+h2{
+  text-align:center;
+  margin:0 0 12px;
+  font-size:20px;
+  color:#f8fafc;
+  letter-spacing:.2px;
+}
+
+label{
+  display:block;
+  font-size:13px;
+  margin-top:8px;
+  color:#cbd5f5;
+}
 
 input{
   width:100%;
@@ -40,8 +63,17 @@ input{
   border:1px solid #1f2937;
   background:#020617;
   color:#e5e7eb;
-  font-size:14px
+  font-size:14px;
+  outline:none;
+  transition:border-color .15s ease, box-shadow .15s ease;
 }
+
+input:focus{
+  border-color:#2563eb;
+  box-shadow:0 0 0 1px rgba(37,99,235,.35);
+}
+
+/* BUTTON */
 .btn{
   background:#2563eb;
   color:#fff;
@@ -49,9 +81,20 @@ input{
   border-radius:8px;
   border:0;
   margin-top:12px;
-  width:100%
+  width:100%;
+  font-weight:600;
+  cursor:pointer;
+  transition:background-color .15s ease, box-shadow .15s ease;
 }
-.btn[disabled]{background:#334155}
+
+.btn:active{
+  box-shadow:0 4px 10px rgba(0,0,0,.6) inset;
+}
+
+.btn[disabled]{
+  background:#334155;
+  cursor:not-allowed;
+}
 
 .req{color:#ef4444;margin-right:6px}
 .small{font-size:13px;color:#9ca3af}
@@ -64,83 +107,119 @@ input{
 }
 
 /* PIN */
-.pin-row{display:flex;gap:10px;justify-content:center;margin-top:10px}
+.pin-row{
+  display:flex;
+  gap:10px;
+  justify-content:center;
+  margin-top:10px;
+}
+
 .pin-digit{
-  width:18px;height:18px;
+  width:18px;
+  height:18px;
   border-radius:50%;
   border:2px solid #fff;
   background:#fff;
-  text-align:center;
   font-size:1px;
   color:transparent;
   caret-color:transparent;
+  outline:none;
 }
+
 .pin-digit.filled{
   background:#2563eb;
   border-color:#2563eb;
 }
 
-/* OTP */
+/* OTP MODAL */
 .otp-modal{
   position:fixed;
   inset:0;
-  background:rgba(2,6,23,.85);
+  background:rgba(2,6,23,.88);
   display:flex;
   align-items:center;
-  justify-content:center
+  justify-content:center;
 }
+
 .otp-box{
   background:#020617;
   padding:20px;
-  border-radius:12px;
+  border-radius:14px;
   min-width:340px;
-  border:1px solid #1f2937
+  border:1px solid #1f2937;
+  box-shadow:0 16px 36px rgba(0,0,0,.85);
 }
-.otp-row{display:flex;gap:10px;justify-content:center;margin-top:10px}
+
+.otp-row{
+  display:flex;
+  gap:10px;
+  justify-content:center;
+  margin-top:10px;
+}
+
 .otp-digit{
-  width:18px;height:18px;
+  width:18px;
+  height:18px;
   border-radius:50%;
   border:2px solid #fff;
   background:#fff;
-  text-align:center;
   font-size:1px;
   color:transparent;
-  caret-color:transparent;
 }
+
 .otp-digit.filled{
   background:#2563eb;
-  border-color:#2563eb
+  border-color:#2563eb;
 }
-.otp-warning{color:#ef4444;font-size:13px;display:none}
 
+.otp-warning{
+  color:#ef4444;
+  font-size:13px;
+  display:none;
+}
+
+/* RESEND */
 .resend-row{
   display:flex;
   align-items:center;
   justify-content:space-between;
   gap:10px;
-  margin-top:14px
+  margin-top:14px;
 }
+
 .resend-btn{
   background:#020617;
   border:1px solid #1f2937;
   padding:10px 14px;
   border-radius:8px;
   color:#e5e7eb;
-  flex:1
+  flex:1;
+  cursor:pointer;
+  transition:box-shadow .15s ease;
 }
-.resend-btn[disabled]{opacity:.6}
+
+.resend-btn:active{
+  box-shadow:0 4px 10px rgba(0,0,0,.6) inset;
+}
+
+.resend-btn[disabled]{
+  opacity:.6;
+  cursor:not-allowed;
+}
 
 .action-primary{
   background:#2563eb;
   border:0;
   color:#fff;
 }
+
 .action-secondary{
   background:#020617;
   border:1px solid #1f2937;
   color:#e5e7eb;
 }
 
+/* SPINNER */
 .spinner{
   width:14px;
   height:14px;
@@ -153,6 +232,11 @@ input{
   margin-right:6px;
 }
 @keyframes spin{to{transform:rotate(360deg)}}
+
+/* REDUCED MOTION */
+@media (prefers-reduced-motion: reduce){
+  *{animation:none !important;transition:none !important}
+}
 </style>
 </head>
 
@@ -275,7 +359,7 @@ const loginBtn=document.getElementById('loginBtn');
 
 function validatePhone(){
   const d=phone.value.replace('+263','');
-  if(!d) { phoneError.innerText=''; return false; }
+  if(!d){phoneError.innerText='';return false}
   if(!/^7\d{8}$/.test(d)){
     phoneError.innerText='Enter your 9-digit number starting with 7';
     return false;
