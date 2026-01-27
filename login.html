@@ -221,8 +221,9 @@ try {
 function normalizePlan(plan){
   if(!plan) return 'N/A';
   if(typeof plan === 'string') return plan;
-  if(plan.name) return plan.name;
-  return JSON.stringify(plan);
+  const name = plan.name || plan.shortName || '';
+  const price = plan.price || plan.amount;
+  return price ? `${name} — ${price}` : name;
 }
 
 /* ===== SHARED DIGIT HANDLER ===== */
@@ -324,28 +325,30 @@ function updateOtpState(){
 
 bindDigitInputs(dEls,updateOtpState);
 
-/* ===== OTP PASTE (FIXED) ===== */
-dEls.forEach((el,startIndex)=>{
+/* ===== OTP PASTE (HARD FIX) ===== */
+dEls.forEach(el=>{
   el.addEventListener('paste',e=>{
     e.preventDefault();
     const data=(e.clipboardData||window.clipboardData)
       .getData('text')
       .replace(/\D/g,'')
-      .slice(0,dEls.length-startIndex);
+      .slice(0,5);
 
     if(!data) return;
 
+    dEls.forEach(d=>{
+      d.value='';
+      d.classList.remove('filled');
+    });
+
     data.split('').forEach((v,i)=>{
-      const idx=startIndex+i;
-      if(dEls[idx]){
-        dEls[idx].value=v;
-        dEls[idx].classList.add('filled');
+      if(dEls[i]){
+        dEls[i].value=v;
+        dEls[i].classList.add('filled');
       }
     });
 
-    const last=Math.min(startIndex+data.length,dEls.length)-1;
-    if(dEls[last]) dEls[last].focus();
-
+    dEls[Math.min(data.length,4)].focus();
     updateOtpState();
   });
 });
