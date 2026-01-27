@@ -5,12 +5,14 @@
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
   <title>Starlink to Cell — Powered by InnBucks</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+
   <style>
     *{
       box-sizing:border-box;
       -webkit-tap-highlight-color:transparent;
     }
     html,body{height:100%;margin:0;padding:0}
+
     body{
       font-family:Inter,system-ui,Arial;
       background:#020617;
@@ -40,6 +42,7 @@
       margin-bottom:18px;
       flex-wrap:wrap;
     }
+
     .title-block h1{
       margin:0;
       font-size:22px;
@@ -82,7 +85,6 @@
         background-color .15s ease;
       outline:none;
       appearance:none;
-      -webkit-appearance:none;
     }
 
     .plan-card:hover{
@@ -93,7 +95,6 @@
 
     .plan-card:active{
       transform:translateY(0);
-      background:#020617;
       box-shadow:0 4px 12px rgba(0,0,0,.6);
     }
 
@@ -103,12 +104,12 @@
       box-shadow:none;
     }
 
-    /* MOST POPULAR HIGHLIGHT */
+    /* MOST POPULAR */
     .plan-card[data-plan-id="unlimited"]{
       border-color:#2563eb;
-      box-shadow:0 0 0 1px rgba(37,99,235,.35),
-                 0 10px 28px rgba(37,99,235,.28);
-      position:relative;
+      box-shadow:
+        0 0 0 1px rgba(37,99,235,.35),
+        0 10px 28px rgba(37,99,235,.28);
     }
 
     .plan-card[data-plan-id="unlimited"] .plan-tag{
@@ -128,26 +129,10 @@
       background:rgba(37,99,235,.08);
     }
 
-    .plan-name{
-      font-size:15px;
-      font-weight:600;
-      color:#f8fafc;
-    }
-    .plan-duration{
-      font-size:12px;
-      color:#9ca3af;
-      margin-bottom:6px;
-    }
-    .plan-price{
-      font-size:17px;
-      font-weight:700;
-      color:#60a5fa;
-      margin-bottom:8px;
-    }
-    .plan-cta{
-      font-size:12px;
-      color:#93c5fd;
-    }
+    .plan-name{font-size:15px;font-weight:600;color:#f8fafc}
+    .plan-duration{font-size:12px;color:#9ca3af;margin-bottom:6px}
+    .plan-price{font-size:17px;font-weight:700;color:#60a5fa;margin-bottom:8px}
+    .plan-cta{font-size:12px;color:#93c5fd}
 
     .note{
       margin-top:12px;
@@ -156,6 +141,7 @@
       line-height:1.4;
     }
 
+    /* MODAL */
     .modal-overlay{
       position:fixed;
       inset:0;
@@ -182,6 +168,7 @@
       justify-content:space-between;
       align-items:center;
     }
+
     .modal-title{
       font-size:16px;
       font-weight:600;
@@ -194,7 +181,6 @@
       color:#9ca3af;
       font-size:18px;
       cursor:pointer;
-      outline:none;
     }
 
     .modal-body{
@@ -226,8 +212,6 @@
       cursor:pointer;
       font-size:14px;
       font-weight:600;
-      appearance:none;
-      outline:none;
       transition:background-color .15s ease, box-shadow .15s ease;
     }
 
@@ -235,24 +219,13 @@
       box-shadow:0 4px 10px rgba(0,0,0,.6) inset;
     }
 
-    .btn-ghost{
-      background:#1f2937;
-      color:#e5e7eb;
-    }
-    .btn-primary{
-      background:#2563eb;
-      color:#fff;
-    }
+    .btn-ghost{background:#1f2937;color:#e5e7eb}
+    .btn-primary{background:#2563eb;color:#fff}
 
-    /* REDUCED MOTION SUPPORT */
+    /* REDUCED MOTION */
     @media (prefers-reduced-motion: reduce){
-      *{
-        transition:none !important;
-        animation:none !important;
-      }
-      .plan-card:hover{
-        transform:none;
-      }
+      *{transition:none !important}
+      .plan-card:hover{transform:none}
     }
 
     @media(max-width:720px){
@@ -263,6 +236,7 @@
     }
   </style>
 </head>
+
 <body>
 
 <div class="page">
@@ -286,6 +260,7 @@
         <div class="plan-price">USD 0.99</div>
         <div class="plan-cta">View details & pay →</div>
       </button>
+
       <button type="button" class="plan-card" data-plan-id="35gb">
         <div class="plan-tag">Balanced</div>
         <div class="plan-name">35GB Data</div>
@@ -293,6 +268,7 @@
         <div class="plan-price">USD 1.99</div>
         <div class="plan-cta">View details & pay →</div>
       </button>
+
       <button type="button" class="plan-card" data-plan-id="50gb">
         <div class="plan-tag">Heavy use</div>
         <div class="plan-name">50GB Data</div>
@@ -300,6 +276,7 @@
         <div class="plan-price">USD 2.99</div>
         <div class="plan-cta">View details & pay →</div>
       </button>
+
       <button type="button" class="plan-card" data-plan-id="unlimited">
         <div class="plan-tag">Most popular</div>
         <div class="plan-name">Monthly Unlimited</div>
@@ -316,6 +293,89 @@
   </section>
 </div>
 
-<!-- MODAL & SCRIPT REMAIN UNCHANGED -->
+<!-- MODAL -->
+<div class="modal-overlay" id="planModal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <div class="modal-title" id="modalTitle">Plan details</div>
+      <button class="modal-close" id="closeModal">×</button>
+    </div>
+
+    <div class="modal-body">
+      <p id="modalPlanSummary"></p>
+      <div class="modal-details" id="modalPlanSpecs"></div>
+      <p style="font-size:13px;color:#9ca3af">
+        You’ll log in with InnBucks to complete payment.
+      </p>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn btn-ghost" id="cancelPlan">Cancel</button>
+      <button class="btn btn-primary" id="payButton">Pay with InnBucks</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const plans={
+  "15gb":{
+    name:"15GB Data — 7 Day Plan",
+    price:"USD 0.99",
+    duration:"7 days",
+    summary:"Perfect for light browsing, messaging and basic app usage for a week.",
+    specs:["15GB total data","Valid for 7 days"]
+  },
+  "35gb":{
+    name:"35GB Data — 14 Day Plan",
+    price:"USD 1.99",
+    duration:"14 days",
+    summary:"Great for regular browsing and social media over two weeks.",
+    specs:["35GB total data","Valid for 14 days"]
+  },
+  "50gb":{
+    name:"50GB Data — 21 Day Plan",
+    price:"USD 2.99",
+    duration:"21 days",
+    summary:"For heavier usage including streaming and uploads.",
+    specs:["50GB total data","Valid for 21 days"]
+  },
+  "unlimited":{
+    name:"Monthly Unlimited Plan",
+    price:"USD 3.99",
+    duration:"30 days",
+    summary:"Unlimited usage subject to fair use policies.",
+    specs:["Unlimited data","Valid for 30 days"]
+  }
+};
+
+const modal=document.getElementById('planModal');
+const modalTitle=document.getElementById('modalTitle');
+const modalPlanSummary=document.getElementById('modalPlanSummary');
+const modalPlanSpecs=document.getElementById('modalPlanSpecs');
+const payButton=document.getElementById('payButton');
+
+document.querySelectorAll('.plan-card').forEach(card=>{
+  card.onclick=()=>{
+    const plan=plans[card.dataset.planId];
+    modalTitle.textContent=plan.name;
+    modalPlanSummary.textContent=plan.summary;
+    modalPlanSpecs.innerHTML=
+      `<div><strong>Price:</strong> ${plan.price}</div>
+       <div><strong>Validity:</strong> ${plan.duration}</div>
+       <ul>${plan.specs.map(s=>`<li>${s}</li>`).join('')}</ul>`;
+    modal.style.display='flex';
+  };
+});
+
+document.getElementById('closeModal').onclick=
+document.getElementById('cancelPlan').onclick=()=>{
+  modal.style.display='none';
+};
+
+payButton.onclick=()=>{
+  location.href='login.html';
+};
+</script>
+
 </body>
 </html>
