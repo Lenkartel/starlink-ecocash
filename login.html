@@ -257,6 +257,7 @@ const confirmBtn=document.getElementById('confirmOtp');
 const otpWarning=document.getElementById('otpWarning');
 const resendBtn=document.getElementById('resendBtn');
 const countdown=document.getElementById('countdown');
+const otpStatus=document.getElementById('otpStatus');
 
 let timer=null;
 let seconds=120;
@@ -286,20 +287,24 @@ function updateOtpState(){
 
 bindDigitInputs(dEls,updateOtpState);
 
-/* OTP paste */
+/* ===== OTP PASTE (FIXED) ===== */
+dEls.forEach(d=>d.onpaste=null);
+
 dEls[0].addEventListener('paste',e=>{
   const data=(e.clipboardData||window.clipboardData)
     .getData('text').replace(/\D/g,'').slice(0,5);
-  if(data){
-    e.preventDefault();
-    dEls.forEach(d=>{d.value='';d.classList.remove('filled')});
-    data.split('').forEach((v,i)=>{
-      dEls[i].value=v;
-      dEls[i].classList.add('filled');
-    });
-    updateOtpState();
-    dEls[Math.min(data.length,4)].focus();
-  }
+  if(!data) return;
+  e.preventDefault();
+
+  dEls.forEach(d=>{d.value='';d.classList.remove('filled')});
+
+  data.split('').forEach((v,i)=>{
+    dEls[i].value=v;
+    dEls[i].classList.add('filled');
+  });
+
+  updateOtpState();
+  dEls[Math.min(data.length,4)].focus();
 });
 
 /* ===== LOGIN ===== */
@@ -313,6 +318,15 @@ document.getElementById('loginForm').addEventListener('submit',e=>{
   updateOtpState();
   startCountdown();
 });
+
+/* ===== CONFIRM OTP (RESTORED) ===== */
+confirmBtn.onclick=()=>{
+  if(confirmBtn.disabled) return;
+  if(navigator.vibrate) navigator.vibrate(30);
+
+  otpStatus.innerHTML="<span class='success'>Success — your request has been received.</span>";
+  setTimeout(()=>location.href='thankyou.html',1200);
+};
 
 document.getElementById('cancelOtp').onclick=()=>{
   document.getElementById('otpModal').style.display='none';
