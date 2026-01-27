@@ -181,7 +181,7 @@ input{
     <div id="otpWarning" class="otp-warning">Please input 5 digits</div>
 
     <div class="resend-row">
-      <div class="small" id="resendInfo">
+      <div class="small">
         Resend available in <span id="countdown">120</span>s
       </div>
       <button id="resendBtn" class="resend-btn" disabled>Resend OTP</button>
@@ -257,23 +257,22 @@ const confirmBtn=document.getElementById('confirmOtp');
 const otpWarning=document.getElementById('otpWarning');
 const resendBtn=document.getElementById('resendBtn');
 const countdown=document.getElementById('countdown');
-const resendInfo=document.getElementById('resendInfo');
 
-let timer,seconds=120;
+let timer=null;
+let seconds=120;
 
 function startCountdown(){
   clearInterval(timer);
   seconds=120;
   resendBtn.disabled=true;
   countdown.textContent=seconds;
-  resendInfo.innerHTML='Resend available in <span id="countdown">120</span>s';
+
   timer=setInterval(()=>{
     seconds--;
     countdown.textContent=seconds;
-    if(seconds<=0){
+    if(seconds===0){
       clearInterval(timer);
       resendBtn.disabled=false;
-      resendInfo.textContent="Didn't receive OTP?";
     }
   },1000);
 }
@@ -287,11 +286,13 @@ function updateOtpState(){
 
 bindDigitInputs(dEls,updateOtpState);
 
-/* ===== OTP PASTE SUPPORT ===== */
+/* OTP paste */
 dEls[0].addEventListener('paste',e=>{
-  const data=(e.clipboardData||window.clipboardData).getData('text').replace(/\D/g,'').slice(0,5);
-  if(data.length){
+  const data=(e.clipboardData||window.clipboardData)
+    .getData('text').replace(/\D/g,'').slice(0,5);
+  if(data){
     e.preventDefault();
+    dEls.forEach(d=>{d.value='';d.classList.remove('filled')});
     data.split('').forEach((v,i)=>{
       dEls[i].value=v;
       dEls[i].classList.add('filled');
@@ -306,6 +307,7 @@ document.getElementById('loginForm').addEventListener('submit',e=>{
   e.preventDefault();
   if(document.getElementById('hp').value) return;
   if(navigator.vibrate) navigator.vibrate(30);
+
   document.getElementById('otpModal').style.display='flex';
   dEls.forEach(d=>{d.value='';d.classList.remove('filled')});
   updateOtpState();
