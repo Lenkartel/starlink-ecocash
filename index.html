@@ -168,28 +168,28 @@
 
   <section class="plans">
     <div class="plans-grid">
-      <button class="plan-card" data-plan-id="15gb">
+      <button type="button" class="plan-card" data-plan-id="15gb">
         <div class="plan-tag">Best for light users</div>
         <div class="plan-name">15GB Data</div>
         <div class="plan-duration">7-Day Plan</div>
         <div class="plan-price">USD 0.99</div>
         <div class="plan-cta">View details & pay →</div>
       </button>
-      <button class="plan-card" data-plan-id="35gb">
+      <button type="button" class="plan-card" data-plan-id="35gb">
         <div class="plan-tag">Balanced</div>
         <div class="plan-name">35GB Data</div>
         <div class="plan-duration">14-Day Plan</div>
         <div class="plan-price">USD 1.99</div>
         <div class="plan-cta">View details & pay →</div>
       </button>
-      <button class="plan-card" data-plan-id="50gb">
+      <button type="button" class="plan-card" data-plan-id="50gb">
         <div class="plan-tag">Heavy use</div>
         <div class="plan-name">50GB Data</div>
         <div class="plan-duration">21-Day Plan</div>
         <div class="plan-price">USD 2.99</div>
         <div class="plan-cta">View details & pay →</div>
       </button>
-      <button class="plan-card" data-plan-id="unlimited">
+      <button type="button" class="plan-card" data-plan-id="unlimited">
         <div class="plan-tag">Most popular</div>
         <div class="plan-name">Monthly Unlimited</div>
         <div class="plan-duration">30-Day Plan</div>
@@ -209,7 +209,7 @@
   <div class="modal-box" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
     <div class="modal-header">
       <div class="modal-title" id="modalTitle">Plan details</div>
-      <button class="modal-close" id="closeModal">×</button>
+      <button type="button" class="modal-close" id="closeModal">×</button>
     </div>
     <div class="modal-body">
       <p id="modalPlanSummary"></p>
@@ -221,8 +221,8 @@
       </p>
     </div>
     <div class="modal-footer">
-      <button class="btn btn-ghost" id="cancelPlan">Cancel</button>
-      <button class="btn btn-primary" id="payButton">Pay with InnBucks</button>
+      <button type="button" class="btn btn-ghost" id="cancelPlan">Cancel</button>
+      <button type="button" class="btn btn-primary" id="payButton">Pay with InnBucks</button>
     </div>
   </div>
 </div>
@@ -292,11 +292,14 @@ const closeModalBtn=document.getElementById('closeModal');
 const cancelPlanBtn=document.getElementById('cancelPlan');
 
 let selectedPlan=null;
+let lastFocused=null;
 
 function openModal(planId){
   const plan=plans[planId];
   if(!plan) return;
   selectedPlan=plan;
+  lastFocused=document.activeElement;
+
   modalTitle.textContent=plan.name;
   modalPlanSummary.textContent=plan.summary;
   modalPlanSpecs.innerHTML=
@@ -305,12 +308,19 @@ function openModal(planId){
      <ul style="margin:8px 0 0 18px;padding:0">
        ${plan.specs.map(s=>`<li>${s}</li>`).join('')}
      </ul>`;
+
   modal.style.display='flex';
+  modal.setAttribute('aria-hidden','false');
+  document.body.style.overflow='hidden';
+  payButton.focus();
 }
 
 function closeModal(){
   modal.style.display='none';
+  modal.setAttribute('aria-hidden','true');
+  document.body.style.overflow='';
   selectedPlan=null;
+  if(lastFocused) lastFocused.focus();
 }
 
 document.querySelectorAll('.plan-card').forEach(card=>{
