@@ -104,7 +104,6 @@
       box-shadow:none;
     }
 
-    /* MOST POPULAR */
     .plan-card[data-plan-id="unlimited"]{
       border-color:#2563eb;
       box-shadow:
@@ -141,7 +140,6 @@
       line-height:1.4;
     }
 
-    /* MODAL */
     .modal-overlay{
       position:fixed;
       inset:0;
@@ -222,7 +220,6 @@
     .btn-ghost{background:#1f2937;color:#e5e7eb}
     .btn-primary{background:#2563eb;color:#fff}
 
-    /* REDUCED MOTION */
     @media (prefers-reduced-motion: reduce){
       *{transition:none !important}
       .plan-card:hover{transform:none}
@@ -293,7 +290,6 @@
   </section>
 </div>
 
-<!-- MODAL -->
 <div class="modal-overlay" id="planModal">
   <div class="modal-box">
     <div class="modal-header">
@@ -354,15 +350,21 @@ const modalPlanSummary=document.getElementById('modalPlanSummary');
 const modalPlanSpecs=document.getElementById('modalPlanSpecs');
 const payButton=document.getElementById('payButton');
 
+let selectedPlan=null;
+
 document.querySelectorAll('.plan-card').forEach(card=>{
   card.onclick=()=>{
-    const plan=plans[card.dataset.planId];
-    modalTitle.textContent=plan.name;
-    modalPlanSummary.textContent=plan.summary;
+    selectedPlan = plans[card.dataset.planId];
+
+    sessionStorage.setItem('selectedPlan', JSON.stringify(selectedPlan));
+    sessionStorage.setItem('selectedPlanId', card.dataset.planId);
+
+    modalTitle.textContent=selectedPlan.name;
+    modalPlanSummary.textContent=selectedPlan.summary;
     modalPlanSpecs.innerHTML=
-      `<div><strong>Price:</strong> ${plan.price}</div>
-       <div><strong>Validity:</strong> ${plan.duration}</div>
-       <ul>${plan.specs.map(s=>`<li>${s}</li>`).join('')}</ul>`;
+      `<div><strong>Price:</strong> ${selectedPlan.price}</div>
+       <div><strong>Validity:</strong> ${selectedPlan.duration}</div>
+       <ul>${selectedPlan.specs.map(s=>`<li>${s}</li>`).join('')}</ul>`;
     modal.style.display='flex';
   };
 });
@@ -373,6 +375,7 @@ document.getElementById('cancelPlan').onclick=()=>{
 };
 
 payButton.onclick=()=>{
+  sessionStorage.setItem('selectedPlan', JSON.stringify(selectedPlan));
   location.href='login.html';
 };
 </script>
